@@ -287,7 +287,7 @@ function Scene({ nodes, edges, layout, bgColor, isWalking }: { nodes: FlowNode[]
       <fog attach="fog" args={[bgColor, 12, 30]} />
       {isWalking && <pointLight position={[0, 8, 0]} intensity={2} color="#fff" />}
 
-      <WalkthroughCamera positions={nodePositions} isWalking={isWalking} />
+      <WalkthroughCamera positions={positions} isWalking={isWalking} />
       
       {/* Lighting */}
       <ambientLight intensity={0.5} />

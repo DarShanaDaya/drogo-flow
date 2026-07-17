@@ -26,22 +26,22 @@ const NODE_TYPES: { value: NodeType; label: string }[] = [
 export function PropertiesPanel({ selectedNode, onUpdate, onDelete, selectedEdge }: Props) {
   if (!selectedNode && !selectedEdge) {
     return (
-      <div className="w-[320px] border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-6 flex flex-col gap-6">
-        <h3 className="font-semibold">Properties</h3>
-        <div className="text-sm text-zinc-500 flex flex-col gap-3">
-          <p>Select a node to edit its properties.</p>
-          <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-lg border">
-            <p className="font-medium mb-1">How to use:</p>
-            <ul className="text-xs list-disc pl-4 space-y-1">
-              <li>Click node to select</li>
+      <div className="w-[300px] border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-5 flex flex-col gap-5 text-zinc-900 dark:text-zinc-50">
+        <h3 className="font-semibold text-sm">Properties</h3>
+        <div className="text-xs text-zinc-500 dark:text-zinc-400 flex flex-col gap-3">
+          <p>Select a node or edge in the editor to view and edit its properties.</p>
+          <div className="p-3 bg-zinc-50 dark:bg-zinc-900/60 rounded-xl border border-zinc-200 dark:border-zinc-800">
+            <p className="font-medium mb-1 text-zinc-800 dark:text-zinc-200">How to use:</p>
+            <ul className="text-xs list-disc pl-4 space-y-1 text-zinc-600 dark:text-zinc-400">
+              <li>Click a node to select</li>
               <li>Drag to reposition</li>
-              <li>Drag handle to connect</li>
-              <li>Use toolbar to add nodes</li>
+              <li>Drag handle dots to connect</li>
+              <li>Use buttons above canvas to add nodes</li>
             </ul>
           </div>
-          <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
-            <p className="font-medium text-blue-900 dark:text-blue-200 text-xs">Pro tip</p>
-            <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">Changes sync to mermaid code automatically. Switch to Text view to see generated syntax.</p>
+          <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-xl border border-blue-200 dark:border-blue-800/50">
+            <p className="font-medium text-blue-900 dark:text-blue-200 text-xs">Live Sync</p>
+            <p className="text-[11px] text-blue-700 dark:text-blue-300 mt-1">Changes sync bidirectionally to mermaid syntax automatically.</p>
           </div>
         </div>
       </div>
@@ -50,10 +50,9 @@ export function PropertiesPanel({ selectedNode, onUpdate, onDelete, selectedEdge
 
   if (selectedEdge) {
     return (
-      <div className="w-[320px] border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-6 flex flex-col gap-4">
-        <h3 className="font-semibold">Edge Properties</h3>
-        <div className="text-sm text-zinc-500">Editing edge {selectedEdge.id}</div>
-        {/* Edge label editing could be added */}
+      <div className="w-[300px] border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-5 flex flex-col gap-4 text-zinc-900 dark:text-zinc-50">
+        <h3 className="font-semibold text-sm">Edge Properties</h3>
+        <p className="text-xs text-zinc-500">{selectedEdge.source} → {selectedEdge.target}</p>
       </div>
     );
   }
@@ -61,28 +60,29 @@ export function PropertiesPanel({ selectedNode, onUpdate, onDelete, selectedEdge
   if (!selectedNode) return null;
 
   return (
-    <div className="w-[320px] border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 flex flex-col h-full overflow-auto">
+    <div className="w-[300px] border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 flex flex-col h-full overflow-auto text-zinc-900 dark:text-zinc-50">
       <div className="p-4 border-b border-zinc-200 dark:border-zinc-800">
-        <h3 className="font-semibold">Node Properties</h3>
-        <p className="text-xs text-zinc-500 mt-1">{selectedNode.id}</p>
+        <h3 className="font-semibold text-sm">Node Properties</h3>
+        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 font-mono">{selectedNode.id}</p>
       </div>
 
-      <div className="flex-1 p-4 flex flex-col gap-5">
-        <div className="space-y-2">
+      <div className="flex-1 p-4 flex flex-col gap-4">
+        <div className="space-y-1.5">
           <Label>Label</Label>
           <Input
             value={selectedNode.data.label}
             onChange={(e) => onUpdate({ ...selectedNode, data: { ...selectedNode.data, label: e.target.value } })}
             placeholder="Node label"
+            className="text-xs bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-50"
           />
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <Label>Type</Label>
           <select
             value={selectedNode.data.type}
             onChange={(e) => onUpdate({ ...selectedNode, data: { ...selectedNode.data, type: e.target.value as NodeType } })}
-            className="w-full h-10 px-3 rounded-md border border-zinc-200 bg-white text-sm dark:border-zinc-800 dark:bg-zinc-950"
+            className="w-full h-9 px-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-50 focus:outline-none"
           >
             {NODE_TYPES.map(t => (
               <option key={t.value} value={t.value}>{t.label}</option>
@@ -90,14 +90,14 @@ export function PropertiesPanel({ selectedNode, onUpdate, onDelete, selectedEdge
           </select>
         </div>
 
-        <div className="space-y-2">
-          <Label>Color</Label>
-          <div className="flex flex-wrap gap-2">
+        <div className="space-y-1.5">
+          <Label>Color Preset</Label>
+          <div className="flex flex-wrap gap-2 items-center">
             {Object.entries(NODE_COLORS).map(([type, color]) => (
               <button
                 key={type}
                 onClick={() => onUpdate({ ...selectedNode, data: { ...selectedNode.data, color } })}
-                className="w-8 h-8 rounded-full border-2 border-white shadow-sm hover:scale-110 transition-transform"
+                className="w-6 h-6 rounded-full border border-white/50 dark:border-zinc-800 shadow-sm hover:scale-110 transition-transform"
                 style={{ backgroundColor: color }}
                 title={type}
               />
@@ -106,56 +106,56 @@ export function PropertiesPanel({ selectedNode, onUpdate, onDelete, selectedEdge
               type="color"
               value={selectedNode.data.color || '#3b82f6'}
               onChange={(e) => onUpdate({ ...selectedNode, data: { ...selectedNode.data, color: e.target.value } })}
-              className="w-8 h-8 rounded-full cursor-pointer"
+              className="w-6 h-6 rounded-full cursor-pointer border-0 p-0"
             />
           </div>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <Label>Description (optional)</Label>
           <textarea
             value={selectedNode.data.description || ''}
             onChange={(e) => onUpdate({ ...selectedNode, data: { ...selectedNode.data, description: e.target.value } })}
-            className="w-full min-h-[80px] p-2 text-sm rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950"
-            placeholder="Add details..."
+            className="w-full min-h-[70px] p-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-50 focus:outline-none"
+            placeholder="Add node description..."
           />
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <Label>Position</Label>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <span className="text-xs text-zinc-500">X</span>
+              <span className="text-[10px] text-zinc-500">X Position</span>
               <Input
                 type="number"
                 value={Math.round(selectedNode.position.x)}
                 onChange={(e) => onUpdate({ ...selectedNode, position: { ...selectedNode.position, x: Number(e.target.value) } })}
+                className="text-xs h-8"
               />
             </div>
             <div>
-              <span className="text-xs text-zinc-500">Y</span>
+              <span className="text-[10px] text-zinc-500">Y Position</span>
               <Input
                 type="number"
                 value={Math.round(selectedNode.position.y)}
                 onChange={(e) => onUpdate({ ...selectedNode, position: { ...selectedNode.position, y: Number(e.target.value) } })}
+                className="text-xs h-8"
               />
             </div>
           </div>
         </div>
 
-        <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800 space-y-2">
+        <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 space-y-2 mt-auto">
           <Button
             variant="destructive"
-            className="w-full"
+            size="sm"
+            className="w-full rounded-lg text-xs"
             onClick={() => onDelete(selectedNode.id)}
           >
             Delete Node
           </Button>
-          <p className="text-xs text-zinc-500 text-center">Deletes and updates mermaid code</p>
         </div>
       </div>
     </div>
   );
 }
-
-
