@@ -1,26 +1,27 @@
 'use client';
 import { useEffect, useState } from 'react';
 
-let mermaidInstance: any = null;
+let currentTheme = '';
 
-async function getMermaid() {
+async function getMermaid(theme: string = 'default') {
   if (typeof window === 'undefined') return null;
-  if (mermaidInstance) return mermaidInstance;
   const mermaid = (await import('mermaid')).default;
-  mermaid.initialize({
-    startOnLoad: false,
-    theme: 'default',
-    securityLevel: 'loose',
-    flowchart: {
-      htmlLabels: true,
-      curve: 'basis',
-    },
-  });
-  mermaidInstance = mermaid;
+  if (currentTheme !== theme) {
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: theme as any,
+      securityLevel: 'loose',
+      flowchart: {
+        htmlLabels: true,
+        curve: 'basis',
+      },
+    });
+    currentTheme = theme;
+  }
   return mermaid;
 }
 
-export function useMermaid(code: string) {
+export function useMermaid(code: string, theme: string = 'default') {
   const [svg, setSvg] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -38,7 +39,7 @@ export function useMermaid(code: string) {
       setError(null);
       
       try {
-        const mermaid = await getMermaid();
+        const mermaid = await getMermaid(theme);
         if (!mermaid) return;
         
         // Generate unique id
@@ -64,7 +65,7 @@ export function useMermaid(code: string) {
       cancelled = true;
       clearTimeout(timeout);
     };
-  }, [code]);
+  }, [code, theme]);
 
   return { svg, error, isLoading };
 }

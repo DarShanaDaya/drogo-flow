@@ -94,40 +94,40 @@ export function PricingCards() {
 
       <div className="mt-14 grid md:grid-cols-2 lg:grid-cols-4 gap-6">
         {plans.map(plan => (
-          <Card key={plan.name} className={`relative flex flex-col transition-shadow hover:shadow-lg ${plan.popular ? 'border-zinc-900 dark:border-zinc-100 shadow-lg ring-1 ring-zinc-900/10 dark:ring-zinc-100/10' : ''}`}>
+          <Card key={plan.name} className={`relative flex flex-col transition-all bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:shadow-xl ${plan.popular ? 'border-zinc-900 dark:border-zinc-100 shadow-xl ring-2 ring-zinc-900/10 dark:ring-zinc-100/20' : ''}`}>
             {plan.badge && (
-              <div className="absolute -top-3 left-6">
-                <span className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${plan.popular ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'bg-indigo-600 text-white'}`}>
+              <div className="absolute -top-3.5 left-6">
+                <span className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${plan.popular ? 'bg-zinc-900 text-white dark:bg-zinc-50 dark:text-zinc-900 shadow-md' : 'bg-indigo-600 text-white shadow-sm'}`}>
                   {plan.badge}
                 </span>
               </div>
             )}
             
-            <CardHeader>
-              <CardTitle className="text-lg">{plan.name}</CardTitle>
-              <CardDescription className="text-sm">{plan.description}</CardDescription>
+            <CardHeader className="pt-6">
+              <CardTitle className="text-xl font-bold text-zinc-900 dark:text-zinc-50">{plan.name}</CardTitle>
+              <CardDescription className="text-xs text-zinc-500 dark:text-zinc-400">{plan.description}</CardDescription>
               <div className="mt-4 flex items-baseline gap-1.5">
-                <span className="text-4xl font-bold text-zinc-900 dark:text-zinc-50">{plan.price}</span>
-                <span className="text-sm text-zinc-500">{plan.period}</span>
+                <span className="text-4xl font-extrabold text-zinc-900 dark:text-zinc-50">{plan.price}</span>
+                <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">{plan.period}</span>
               </div>
             </CardHeader>
             
-            <CardContent className="flex-1">
+            <CardContent className="flex-1 pt-2">
               <ul className="space-y-3">
                 {plan.features.map(f => (
-                  <li key={f} className="flex items-start gap-2.5 text-sm">
-                    <svg className="w-4 h-4 mt-0.5 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <li key={f} className="flex items-start gap-2.5 text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                    <svg className="w-4 h-4 mt-0.5 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
-                    <span className="text-zinc-700 dark:text-zinc-300">{f}</span>
+                    <span>{f}</span>
                   </li>
                 ))}
               </ul>
             </CardContent>
             
-            <CardFooter>
+            <CardFooter className="pt-4 pb-6">
               <Link href="/editor/new" className="w-full">
-                <Button variant={plan.popular ? 'default' : plan.variant} className={`w-full rounded-full ${plan.popular ? 'h-10' : ''}`}>
+                <Button variant={plan.popular ? 'default' : plan.variant} className={`w-full rounded-full font-medium ${plan.popular ? 'h-10 text-sm shadow-md' : 'h-9 text-xs'}`}>
                   {plan.cta}
                 </Button>
               </Link>
@@ -137,7 +137,7 @@ export function PricingCards() {
       </div>
 
       <div className="mt-16 text-center">
-        <p className="text-sm text-zinc-500">All plans include access to all view modes (Flow, Code, 3D, Graph, Animation). Free plan stores diagrams locally.</p>
+        <p className="text-xs text-zinc-500 dark:text-zinc-400">All plans include access to all view modes (Flow, Code, 3D, Graph, Animation). Free plan stores diagrams locally.</p>
       </div>
     </div>
   );

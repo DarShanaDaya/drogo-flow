@@ -307,8 +307,20 @@ export default function EditorPage() {
 
   // Dark mode toggle effect
   useEffect(() => {
-    if (isDark) document.documentElement.classList.add('dark');
-    else document.documentElement.classList.remove('dark');
+    const saved = localStorage.getItem('drogo_theme');
+    if (saved === 'dark' || (!saved && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      setIsDark(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('drogo_theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('drogo_theme', 'light');
+    }
   }, [isDark]);
 
   if (!diagram) {
@@ -340,7 +352,7 @@ export default function EditorPage() {
         return (
           <div className="flex-1 flex">
             <div className="w-[50%] border-r"><TextBuilder code={mermaidCode} onChange={(c) => { setMermaidCode(c); history.set(c); }} /></div>
-            <div className="w-[50%] bg-zinc-50 dark:bg-zinc-900 p-4 overflow-auto"><MermaidRenderer code={mermaidCode} onSvgReady={setSvgElement} /></div>
+            <div className="w-[50%] bg-zinc-50 dark:bg-zinc-900 p-4 overflow-auto"><MermaidRenderer code={mermaidCode} theme={theme} onSvgReady={setSvgElement} /></div>
           </div>
         );
       case 'split':
@@ -358,7 +370,7 @@ export default function EditorPage() {
             </div>
             <div className="flex-1 flex flex-col min-w-0 bg-zinc-50 dark:bg-zinc-900">
               <div className="flex-1 p-3 overflow-auto">
-                <MermaidRenderer code={mermaidCode} onSvgReady={setSvgElement} className="h-full min-h-[400px] shadow-sm border border-zinc-200 dark:border-zinc-800" />
+                <MermaidRenderer code={mermaidCode} theme={theme} onSvgReady={setSvgElement} className="h-full min-h-[400px] shadow-sm border border-zinc-200 dark:border-zinc-800" />
               </div>
               <div className="h-[40%] border-t border-zinc-200 dark:border-zinc-800">
                 <DragDropBuilder nodes={nodes} edges={edges} onNodesChange={handleNodesChange} onEdgesChange={handleEdgesChange} onNodeSelect={(n) => { setSelectedNode(n); if (n) setSelectedEdge(null); }} onEdgeSelect={(e) => { setSelectedEdge(e as any); if (e) setSelectedNode(null); }} />
@@ -420,7 +432,7 @@ export default function EditorPage() {
         </div>
       </header>
 
-      <Toolbar title={diagram.title} mermaidCode={mermaidCode} svgElement={svgElement} onTitleChange={handleTitleChange} onSave={handleSave} isLoggedIn={isAuthenticated} isPaid={isPaid} />
+      <Toolbar title={diagram.title} mermaidCode={mermaidCode} svgElement={svgElement} onTitleChange={handleTitleChange} onSave={handleSave} isLoggedIn={isAuthenticated} isPaid={isPaid} autoSave={autoSave} />
 
       <div className="flex-1 flex min-h-0 overflow-hidden">
         {showSidebar && <DiagramSidebar currentId={diagram.id} />}

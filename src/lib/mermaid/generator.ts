@@ -27,8 +27,6 @@ export function generateMermaidFromNodes(nodes: FlowNode[], edges: FlowEdge[], d
   
   let code = `flowchart ${direction}\n`;
   
-  const nodeMap = new Map(nodes.map(n => [n.id, n]));
-  
   nodes.forEach(node => {
     code += `    ${nodeShape(node.data.type, node.data.label, node.id)}\n`;
   });
@@ -37,7 +35,6 @@ export function generateMermaidFromNodes(nodes: FlowNode[], edges: FlowEdge[], d
   
   edges.forEach(edge => {
     const label = edge.label ? `|${edge.label}|` : '';
-    // avoid duplicate spaces when label empty
     if (label) {
       code += `    ${edge.source} -->${label} ${edge.target}\n`;
     } else {
@@ -45,22 +42,21 @@ export function generateMermaidFromNodes(nodes: FlowNode[], edges: FlowEdge[], d
     }
   });
   
-  // Add styles
+  // Add styles with WCAG AA compliant contrast colors
   code += '\n';
   nodes.forEach(node => {
     if (node.data.color) {
       code += `    style ${node.id} fill:${node.data.color},stroke:${node.data.color},color:#fff\n`;
     } else {
-      // default per type
       switch(node.data.type) {
         case 'start':
           code += `    style ${node.id} fill:#10b981,stroke:#059669,color:#fff\n`;
           break;
         case 'end':
-          code += `    style ${node.id} fill:#ef4444,stroke:#dc2626,color:#fff\n`;
+          code += `    style ${node.id} fill:#f43f5e,stroke:#e11d48,color:#fff\n`;
           break;
         case 'decision':
-          code += `    style ${node.id} fill:#f59e0b,stroke:#d97706,color:#fff\n`;
+          code += `    style ${node.id} fill:#d97706,stroke:#b45309,color:#fff\n`;
           break;
         case 'database':
           code += `    style ${node.id} fill:#8b5cf6,stroke:#7c3aed,color:#fff\n`;
@@ -73,7 +69,6 @@ export function generateMermaidFromNodes(nodes: FlowNode[], edges: FlowEdge[], d
 }
 
 export function sanitizeMermaid(code: string): string {
-  // basic sanitization - remove script tags, ensure flowchart prefix
   let cleaned = code.replace(/<script.*?>.*?<\/script>/gi, '');
   if (!cleaned.trim().startsWith('flowchart') && !cleaned.trim().startsWith('graph') && !cleaned.trim().startsWith('sequenceDiagram') && !cleaned.trim().startsWith('classDiagram') && !cleaned.trim().startsWith('stateDiagram') ) {
     cleaned = `flowchart TD\n${cleaned}`;

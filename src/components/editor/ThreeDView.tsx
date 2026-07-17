@@ -1,28 +1,21 @@
 'use client';
 import { useRef, useMemo, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Text, Line, Float, PerspectiveCamera, Stars, MeshDistortMaterial, RoundedBox } from '@react-three/drei';
+import { OrbitControls, Text, Line, Float, PerspectiveCamera, Stars, RoundedBox } from '@react-three/drei';
 import { FlowNode, FlowEdge, NodeType } from '@/types/diagram';
 import * as THREE from 'three';
 
-// Extended color palette
+// Refined color palette matching node taxonomy
 const NODE_SHAPE_COLORS: Record<string, string> = {
   start: '#10b981',
-  end: '#ef4444',
+  end: '#f43f5e',
   process: '#3b82f6',
-  decision: '#f59e0b',
+  decision: '#d97706',
   database: '#8b5cf6',
-  input: '#06b6d4',
-  subprocess: '#ec4899',
-  custom: '#6b7280',
+  input: '#0284c7',
+  subprocess: '#d946ef',
+  custom: '#64748b',
 };
-
-const EXTENDED_PALETTE = [
-  '#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444',
-  '#06b6d4', '#ec4899', '#f97316', '#14b8a6', '#6366f1',
-  '#84cc16', '#e11d48', '#0ea5e9', '#a855f7', '#22c55e',
-  '#eab308', '#d946ef', '#f43f5e', '#2dd4bf', '#818cf8',
-];
 
 type Shape3D = 'box' | 'sphere' | 'octahedron' | 'dodecahedron' | 'torus' | 'cone' | 'cylinder' | 'tetrahedron' | 'icosahedron' | 'roundedBox' | 'torusKnot' | 'ring';
 
@@ -48,83 +41,83 @@ function NodeMesh({ shape, color, hovered }: { shape: Shape3D; color: string; ho
       return (
         <mesh scale={scale}>
           <sphereGeometry args={[0.55, 32, 32]} />
-          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={hovered ? 0.4 : 0.05} roughness={0.3} metalness={0.1} />
+          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={hovered ? 0.35 : 0.08} roughness={0.3} metalness={0.1} />
         </mesh>
       );
     case 'octahedron':
       return (
         <mesh scale={scale} rotation={[0, Math.PI / 4, 0]}>
           <octahedronGeometry args={[0.6, 0]} />
-          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={hovered ? 0.4 : 0.05} roughness={0.2} metalness={0.2} />
+          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={hovered ? 0.35 : 0.08} roughness={0.25} metalness={0.15} />
         </mesh>
       );
     case 'dodecahedron':
       return (
         <mesh scale={scale}>
           <dodecahedronGeometry args={[0.55, 0]} />
-          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={hovered ? 0.4 : 0.05} roughness={0.25} metalness={0.15} />
+          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={hovered ? 0.35 : 0.08} roughness={0.25} metalness={0.15} />
         </mesh>
       );
     case 'torus':
       return (
         <mesh scale={scale} rotation={[Math.PI / 2, 0, 0]}>
           <torusGeometry args={[0.45, 0.18, 16, 32]} />
-          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={hovered ? 0.4 : 0.05} roughness={0.3} metalness={0.1} />
+          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={hovered ? 0.35 : 0.08} roughness={0.3} metalness={0.1} />
         </mesh>
       );
     case 'cone':
       return (
         <mesh scale={scale}>
           <coneGeometry args={[0.5, 0.9, 32]} />
-          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={hovered ? 0.4 : 0.05} roughness={0.3} metalness={0.1} />
+          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={hovered ? 0.35 : 0.08} roughness={0.3} metalness={0.1} />
         </mesh>
       );
     case 'cylinder':
       return (
         <mesh scale={scale}>
           <cylinderGeometry args={[0.45, 0.45, 0.8, 32]} />
-          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={hovered ? 0.4 : 0.05} roughness={0.3} metalness={0.15} />
+          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={hovered ? 0.35 : 0.08} roughness={0.3} metalness={0.15} />
         </mesh>
       );
     case 'tetrahedron':
       return (
         <mesh scale={scale}>
           <tetrahedronGeometry args={[0.6, 0]} />
-          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={hovered ? 0.4 : 0.05} roughness={0.2} metalness={0.2} />
+          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={hovered ? 0.35 : 0.08} roughness={0.25} metalness={0.15} />
         </mesh>
       );
     case 'icosahedron':
       return (
         <mesh scale={scale}>
           <icosahedronGeometry args={[0.55, 0]} />
-          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={hovered ? 0.4 : 0.05} roughness={0.2} metalness={0.15} />
+          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={hovered ? 0.35 : 0.08} roughness={0.25} metalness={0.15} />
         </mesh>
       );
     case 'roundedBox':
       return (
         <RoundedBox args={[1.2, 0.6, 0.4]} radius={0.08} smoothness={4} scale={scale}>
-          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={hovered ? 0.4 : 0.05} roughness={0.3} metalness={0.1} />
+          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={hovered ? 0.35 : 0.08} roughness={0.3} metalness={0.1} />
         </RoundedBox>
       );
     case 'torusKnot':
       return (
         <mesh scale={scale * 0.6}>
           <torusKnotGeometry args={[0.4, 0.15, 64, 16]} />
-          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={hovered ? 0.4 : 0.05} roughness={0.3} metalness={0.2} />
+          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={hovered ? 0.35 : 0.08} roughness={0.3} metalness={0.15} />
         </mesh>
       );
     case 'ring':
       return (
         <mesh scale={scale}>
           <ringGeometry args={[0.3, 0.55, 32]} />
-          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={hovered ? 0.4 : 0.05} roughness={0.3} metalness={0.1} side={THREE.DoubleSide} />
+          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={hovered ? 0.35 : 0.08} roughness={0.3} metalness={0.1} side={THREE.DoubleSide} />
         </mesh>
       );
     default: // box
       return (
         <mesh scale={scale}>
           <boxGeometry args={[1.0, 0.6, 0.4]} />
-          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={hovered ? 0.4 : 0.05} roughness={0.3} metalness={0.1} />
+          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={hovered ? 0.35 : 0.08} roughness={0.3} metalness={0.1} />
         </mesh>
       );
   }
@@ -165,7 +158,7 @@ function Node3D({ node, position }: { node: FlowNode; position: [number, number,
           {node.data.label}
         </Text>
         {hovered && (
-          <pointLight position={[0, 0.5, 0.5]} intensity={2} color={color} distance={3} />
+          <pointLight position={[0, 0.5, 0.5]} intensity={1.5} color={color} distance={3} />
         )}
       </group>
     </Float>
@@ -194,7 +187,7 @@ function Edge3D({ start, end, color }: { start: [number, number, number]; end: [
       lineWidth={1.5}
       dashed={false}
       transparent
-      opacity={0.6}
+      opacity={0.65}
     />
   );
 }
@@ -212,14 +205,12 @@ function WalkthroughCamera({ positions, isWalking }: { positions: Map<string, [n
     const nextIndex = (nodeIndexRef.current + 1) % nodeKeys.length;
     const nextNode = positions.get(nodeKeys[nextIndex]) || [0, 0, 0];
 
-    // Progress along current segment
-    progressRef.current += delta * 0.8; // speed
+    progressRef.current += delta * 0.8;
     if (progressRef.current >= 1) {
       progressRef.current = 0;
       nodeIndexRef.current = nextIndex;
     }
 
-    // Smooth lerp between nodes
     const t = progressRef.current;
     const camX = THREE.MathUtils.lerp(currentNode[0], nextNode[0], t);
     const camY = THREE.MathUtils.lerp(currentNode[1] + 3.5, nextNode[1] + 3.5, t);
@@ -269,7 +260,6 @@ function Scene({ nodes, edges, layout, bgColor, isWalking }: { nodes: FlowNode[]
         y = Math.sin(idx * 0.8) * 2;
         z = Math.cos(idx * 0.5) * 2;
       } else {
-        // force-like
         const angle = (idx / n) * Math.PI * 2;
         const r = 3 + Math.random() * 3;
         x = Math.cos(angle) * r + (Math.random() - 0.5) * 2;
@@ -285,20 +275,18 @@ function Scene({ nodes, edges, layout, bgColor, isWalking }: { nodes: FlowNode[]
     <>
       <color attach="background" args={[bgColor]} />
       <fog attach="fog" args={[bgColor, 12, 30]} />
-      {isWalking && <pointLight position={[0, 8, 0]} intensity={2} color="#fff" />}
+      {isWalking && <pointLight position={[0, 8, 0]} intensity={1.5} color="#fff" />}
 
-      <WalkthroughCamera positions={nodePositions} isWalking={isWalking} />
+      <WalkthroughCamera positions={positions} isWalking={isWalking} />
       
-      {/* Lighting */}
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[8, 12, 8]} intensity={1.0} castShadow color="#ffffff" />
-      <directionalLight position={[-5, 8, -5]} intensity={0.4} color="#93c5fd" />
-      <pointLight position={[0, 10, 0]} intensity={0.6} color="#c084fc" distance={20} />
-      <pointLight position={[-8, -3, 5]} intensity={0.4} color="#34d399" distance={15} />
-      <pointLight position={[8, -3, -5]} intensity={0.3} color="#f472b6" distance={15} />
+      {/* Balanced Studio Lighting */}
+      <ambientLight intensity={0.65} />
+      <directionalLight position={[10, 15, 10]} intensity={1.1} castShadow color="#ffffff" />
+      <directionalLight position={[-8, 10, -8]} intensity={0.35} color="#93c5fd" />
+      <pointLight position={[0, 10, 0]} intensity={0.3} color="#a78bfa" distance={20} />
       
       {/* Stars background */}
-      <Stars radius={50} depth={40} count={2000} factor={3} saturation={0.5} fade speed={0.5} />
+      <Stars radius={50} depth={40} count={1800} factor={2.5} saturation={0.2} fade speed={0.5} />
       
       {/* Nodes */}
       {nodes.map(node => {
@@ -317,7 +305,7 @@ function Scene({ nodes, edges, layout, bgColor, isWalking }: { nodes: FlowNode[]
       })}
 
       {/* Ground plane */}
-      <gridHelper args={[30, 30, '#1e293b', '#0f172a']} position={[0, -4, 0]} />
+      <gridHelper args={[30, 30, '#27272a', '#18181b']} position={[0, -4, 0]} />
     </>
   );
 }
@@ -331,10 +319,10 @@ type Layout = 'spiral' | 'grid' | 'sphere' | 'helix' | 'wave' | 'force';
 type BgTheme = 'dark' | 'midnight' | 'deep-purple' | 'ocean';
 
 const BG_COLORS: Record<BgTheme, string> = {
-  dark: '#0a0a0f',
-  midnight: '#0c1222',
-  'deep-purple': '#150a22',
-  ocean: '#0a1a22',
+  dark: '#09090b',
+  midnight: '#0b1320',
+  'deep-purple': '#120a1f',
+  ocean: '#081620',
 };
 
 export function ThreeDView({ nodes, edges }: Props) {
@@ -371,7 +359,7 @@ export function ThreeDView({ nodes, edges }: Props) {
       {/* Toggle panel button */}
       <button
         onClick={() => setShowPanel(!showPanel)}
-        className="absolute top-4 left-4 z-10 w-8 h-8 rounded-lg bg-black/50 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/80 hover:text-white hover:bg-black/60 transition-all"
+        className="absolute top-4 left-4 z-10 w-8 h-8 rounded-lg bg-black/60 backdrop-blur-md border border-white/15 flex items-center justify-center text-white/80 hover:text-white hover:bg-black/80 transition-all"
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d={showPanel ? "M6 18L18 6M6 6l12 12" : "M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"} />
@@ -380,7 +368,7 @@ export function ThreeDView({ nodes, edges }: Props) {
 
       {/* Controls panel */}
       {showPanel && (
-        <div className="absolute top-4 left-14 bg-black/60 backdrop-blur-xl text-white p-4 rounded-2xl text-xs border border-white/10 shadow-2xl max-w-[220px] animate-fade-in">
+        <div className="absolute top-4 left-14 bg-zinc-950/80 backdrop-blur-xl text-white p-4 rounded-2xl text-xs border border-white/15 shadow-2xl max-w-[220px] animate-fade-in">
           <p className="font-semibold text-sm mb-3 flex items-center gap-2">
             <svg className="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 7.5l-2.25-1.313M21 7.5v2.25m0-2.25l-2.25 1.313M3 7.5l2.25-1.313M3 7.5l2.25 1.313M3 7.5v2.25m9 3l2.25-1.313M12 12.75l-2.25-1.313M12 12.75V15m0 6.75l2.25-1.313M12 21.75V19.5m0 2.25l-2.25-1.313m0-16.875L12 2.25l2.25 1.313M21 14.25v2.25l-2.25 1.313m-13.5 0L3 16.5v-2.25" />
@@ -440,7 +428,7 @@ export function ThreeDView({ nodes, edges }: Props) {
 
             <button
               onClick={() => setIsWalking(!isWalking)}
-              className="mt-2 w-full px-3 py-1.5 text-xs bg-white/10 hover:bg-white/20 rounded-lg border border-white/10 transition"
+              className="mt-2 w-full px-3 py-1.5 text-xs bg-white/10 hover:bg-white/20 rounded-lg border border-white/10 transition font-medium"
             >
               {isWalking ? '⏹ Stop Walkthrough' : '🚶 Street View Walkthrough'}
             </button>
@@ -457,22 +445,22 @@ export function ThreeDView({ nodes, edges }: Props) {
         {nodes.map(n => (
           <div
             key={n.id}
-            className="px-3 py-1.5 bg-black/50 backdrop-blur-md border border-white/15 rounded-full text-xs text-white/90 whitespace-nowrap flex items-center gap-2 shadow-lg"
+            className="px-3 py-1.5 bg-black/60 backdrop-blur-md border border-white/15 rounded-full text-xs text-white/90 whitespace-nowrap flex items-center gap-2 shadow-lg"
           >
             <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: n.data.color || NODE_SHAPE_COLORS[n.data.type] }} />
-            <span className="font-medium">{n.data.label}</span>
+            <span className="font-semibold">{n.data.label}</span>
             <span className="text-white/40 text-[10px]">{getShapeForType(n.data.type)}</span>
           </div>
         ))}
       </div>
 
       {/* Stats badge - top right */}
-      <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-md text-white px-4 py-2 rounded-full text-xs border border-white/10 flex items-center gap-3">
-        <span className="flex items-center gap-1.5">
+      <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md text-white px-4 py-2 rounded-full text-xs border border-white/15 flex items-center gap-3">
+        <span className="flex items-center gap-1.5 font-medium">
           <span className="w-1.5 h-1.5 bg-purple-400 rounded-full" />
           {nodes.length} nodes
         </span>
-        <span className="flex items-center gap-1.5">
+        <span className="flex items-center gap-1.5 font-medium">
           <span className="w-1.5 h-1.5 bg-blue-400 rounded-full" />
           {edges.length} edges
         </span>
@@ -480,9 +468,9 @@ export function ThreeDView({ nodes, edges }: Props) {
       </div>
 
       {isWalking && (
-        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 bg-black/70 text-white px-4 py-1 rounded-full text-xs flex items-center gap-2">
-          🚶 Walking through process... (click to stop)
-          <button onClick={() => setIsWalking(false)} className="underline">Stop</button>
+        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 bg-black/80 text-white px-4 py-1.5 rounded-full text-xs flex items-center gap-2 border border-white/15 shadow-xl">
+          🚶 Walking through process...
+          <button onClick={() => setIsWalking(false)} className="underline ml-1 font-semibold hover:text-amber-300">Stop</button>
         </div>
       )}
     </div>

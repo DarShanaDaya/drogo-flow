@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FlowNode, FlowEdge } from '@/types/diagram';
 import { parseMermaidToNodes } from '@/lib/mermaid/parser';
-import { generateMermaidFromNodes } from '@/lib/mermaid/generator';
 
 interface Props {
   onGenerate: (code: string, nodes: FlowNode[], edges: FlowEdge[]) => void;
@@ -23,7 +22,6 @@ export function AIGenerator({ onGenerate, credits }: Props) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [lastGenerated, setLastGenerated] = useState<string | null>(null);
 
-  // Mock AI generation – in real app would call API
   const mockGenerate = (userPrompt: string): string => {
     const lower = userPrompt.toLowerCase();
     
@@ -40,8 +38,8 @@ export function AIGenerator({ onGenerate, credits }: Props) {
     G --> H[Email Receipt]
     H --> I[End]
 
-    style A fill:#3b82f6,color:#fff
-    style I fill:#10b981,color:#fff`;
+    style A fill:#3b82f620,stroke:#3b82f6,stroke-width:2px
+    style I fill:#10b98120,stroke:#10b981,stroke-width:2px`;
     }
     
     if (lower.includes('auth') || lower.includes('login')) {
@@ -80,7 +78,6 @@ export function AIGenerator({ onGenerate, credits }: Props) {
     M --> N[Monitor]`;
     }
     
-    // Generic based on prompt length
     return `flowchart TD
     A[Start: ${prompt.substring(0, 20)}] --> B[Process Step 1]
     B --> C{Decision Point}
@@ -93,17 +90,14 @@ export function AIGenerator({ onGenerate, credits }: Props) {
     G -->|No| B
     H --> I[End]
 
-    style A fill:#8b5cf6,color:#fff
-    style I fill:#10b981,color:#fff`;
+    style A fill:#8b5cf620,stroke:#8b5cf6,stroke-width:2px
+    style I fill:#10b98120,stroke:#10b981,stroke-width:2px`;
   };
 
   const handleGenerate = async () => {
     if (!prompt.trim() || credits <= 0) return;
-    
     setIsGenerating(true);
-    
-    // Simulate AI delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise(resolve => setTimeout(resolve, 1200));
     
     const generatedCode = mockGenerate(prompt);
     const parsed = parseMermaidToNodes(generatedCode);
@@ -111,54 +105,52 @@ export function AIGenerator({ onGenerate, credits }: Props) {
     setLastGenerated(generatedCode);
     onGenerate(generatedCode, parsed.nodes, parsed.edges);
     setIsGenerating(false);
-    
-    if (!PROMPTS.some(p => p.prompt === prompt)) {
-      // Save to recents could be added
-    }
   };
 
   return (
-    <div className="w-full border rounded-xl bg-gradient-to-br from-violet-50 to-blue-50 dark:from-violet-950/30 dark:to-blue-950/30 p-4">
+    <div className="w-full border border-violet-200/80 dark:border-violet-900/50 rounded-xl bg-violet-50/50 dark:bg-violet-950/20 p-4 text-zinc-900 dark:text-zinc-50">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="font-semibold text-sm flex items-center gap-2">
-          <span className="w-6 h-6 rounded-full bg-gradient-to-br from-violet-600 to-blue-600 text-white flex items-center justify-center text-xs">✨</span>
-          AI Generator (Mock)
+        <h3 className="font-semibold text-xs flex items-center gap-2">
+          <span className="w-5 h-5 rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 text-white flex items-center justify-center text-[10px]">✨</span>
+          AI Diagram Assistant
         </h3>
-        <span className="text-xs px-2 py-0.5 bg-white dark:bg-zinc-800 border rounded-full">{credits} credits</span>
+        <span className="text-[10px] px-2 py-0.5 bg-white dark:bg-zinc-900 border border-violet-200 dark:border-violet-800 rounded-full font-mono font-medium text-violet-700 dark:text-violet-300">{credits} credits</span>
       </div>
 
       <div className="flex gap-2">
         <Input
           value={prompt}
           onChange={e => setPrompt(e.target.value)}
-          placeholder="Describe your flowchart... e.g. e-commerce checkout"
-          className="flex-1 h-9 text-sm bg-white dark:bg-zinc-900"
+          placeholder="Describe your flowchart... e.g. checkout flow"
+          className="flex-1 h-8 text-xs bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-50"
           onKeyDown={e => e.key === 'Enter' && handleGenerate()}
         />
-        <Button size="sm" className="h-9" onClick={handleGenerate} disabled={isGenerating || !prompt.trim() || credits <= 0}>
+        <Button size="sm" className="h-8 text-xs rounded-lg px-3 bg-violet-600 hover:bg-violet-700 text-white" onClick={handleGenerate} disabled={isGenerating || !prompt.trim() || credits <= 0}>
           {isGenerating ? 'Generating...' : 'Generate'}
         </Button>
       </div>
 
-      <div className="mt-3 flex flex-wrap gap-1">
+      <div className="mt-2.5 flex flex-wrap gap-1">
         {PROMPTS.map(p => (
-          <button key={p.label} onClick={() => setPrompt(p.prompt)} className="px-2 py-1 text-[11px] bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-full hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-zinc-900 transition-colors">
+          <button 
+            key={p.label} 
+            onClick={() => setPrompt(p.prompt)} 
+            className="px-2 py-0.5 text-[10px] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+          >
             {p.label}
           </button>
         ))}
       </div>
 
       {lastGenerated && (
-        <div className="mt-3 p-2 bg-white dark:bg-zinc-900 rounded-lg border text-[11px] font-mono max-h-[100px] overflow-auto">
-          {lastGenerated.split('\n').slice(0, 5).join('\n')}... ({lastGenerated.split('\n').length} lines)
+        <div className="mt-3 p-2 bg-zinc-950 text-zinc-300 rounded-lg border border-zinc-800 text-[10px] font-mono max-h-[90px] overflow-auto leading-4">
+          {lastGenerated.split('\n').slice(0, 4).join('\n')}... ({lastGenerated.split('\n').length} lines)
         </div>
       )}
 
       {credits <= 0 && (
-        <p className="mt-2 text-xs text-red-600">No credits remaining. <a href="/pricing" className="underline font-medium">View plans</a> to get more.</p>
+        <p className="mt-2 text-xs text-rose-600 dark:text-rose-400">No credits remaining. <a href="/pricing" className="underline font-medium">View plans</a> to get more.</p>
       )}
-
-      <p className="mt-2 text-[10px] text-zinc-500">Uses 1 credit per generation. Powered by mock AI for demo — production would use an LLM API.</p>
     </div>
   );
 }

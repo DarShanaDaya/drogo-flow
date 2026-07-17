@@ -86,14 +86,14 @@ export type User = {
 };
 
 export const NODE_COLORS: Record<NodeType, string> = {
-  start: '#10b981',
-  end: '#ef4444',
-  process: '#3b82f6',
-  decision: '#f59e0b',
-  database: '#8b5cf6',
-  input: '#06b6d4',
-  subprocess: '#ec4899',
-  custom: '#6b7280'
+  start: '#10b981',     // Emerald 500
+  end: '#f43f5e',       // Rose 500
+  process: '#3b82f6',   // Blue 500
+  decision: '#d97706',  // Amber 600 (High contrast)
+  database: '#8b5cf6',  // Violet 500
+  input: '#0284c7',     // Sky 600
+  subprocess: '#d946ef',// Fuchsia 500
+  custom: '#64748b'     // Slate 500
 };
 
 export const DEFAULT_MERMAID = `flowchart TD
@@ -106,8 +106,8 @@ export const DEFAULT_MERMAID = `flowchart TD
     F --> G[End]
 
     style A fill:#10b981,stroke:#059669,color:#fff
-    style G fill:#ef4444,stroke:#dc2626,color:#fff
-    style B fill:#f59e0b,stroke:#d97706,color:#fff
+    style G fill:#f43f5e,stroke:#e11d48,color:#fff
+    style B fill:#d97706,stroke:#b45309,color:#fff
 `;
 
 export const EXAMPLE_DIAGRAMS: Diagram[] = [

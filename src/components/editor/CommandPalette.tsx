@@ -57,21 +57,21 @@ export function CommandPalette({ isOpen, onClose, onAction, viewMode, onViewChan
   );
 
   return (
-    <div className="fixed inset-0 z-[200] bg-black/50 backdrop-blur-sm flex items-start justify-center pt-[20vh]">
-      <div className="w-full max-w-lg bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-        <div className="flex items-center gap-3 p-4 border-b border-zinc-200 dark:border-zinc-800">
-          <span className="text-zinc-500">⌘</span>
+    <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-start justify-center pt-[15vh] px-4 animate-fade-in">
+      <div className="w-full max-w-lg bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden animate-slide-up text-zinc-900 dark:text-zinc-50">
+        <div className="flex items-center gap-3 p-3.5 border-b border-zinc-200 dark:border-zinc-800">
+          <span className="text-zinc-400 font-mono text-base">⌘</span>
           <input
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="Type a command or search..."
-            className="flex-1 bg-transparent outline-none text-sm"
+            className="flex-1 bg-transparent outline-none text-sm text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
             autoFocus
           />
-          <span className="text-xs px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded">ESC</span>
+          <button onClick={onClose} className="text-xs px-2 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 rounded font-mono hover:bg-zinc-200 dark:hover:bg-zinc-700">ESC</button>
         </div>
 
-        <div className="max-h-[300px] overflow-auto p-2">
+        <div className="max-h-[320px] overflow-auto p-2 space-y-0.5">
           {filtered.map(cmd => (
             <button
               key={cmd.id}
@@ -83,22 +83,24 @@ export function CommandPalette({ isOpen, onClose, onAction, viewMode, onViewChan
                 }
                 onClose();
               }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-left text-sm"
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/80 text-left text-xs sm:text-sm transition-colors"
             >
-              <span className="text-lg">{cmd.icon}</span>
-              <span className="flex-1">{cmd.label}</span>
-              {cmd.shortcut && <span className="text-xs text-zinc-500">{cmd.shortcut}</span>}
-              {(cmd as any).view === viewMode && <span className="text-xs px-1.5 py-0.5 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded">active</span>}
+              <span className="text-base">{cmd.icon}</span>
+              <span className="flex-1 font-medium text-zinc-800 dark:text-zinc-200">{cmd.label}</span>
+              {cmd.shortcut && <kbd className="text-[10px] px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded font-mono text-zinc-500">{cmd.shortcut}</kbd>}
+              {(cmd as any).view === viewMode && (
+                <span className="text-[10px] px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/80 text-emerald-800 dark:text-emerald-300 rounded-full font-semibold">Active</span>
+              )}
             </button>
           ))}
 
           {filtered.length === 0 && (
-            <p className="p-4 text-center text-sm text-zinc-500">No commands found</p>
+            <p className="p-6 text-center text-xs text-zinc-500">No matching commands found</p>
           )}
         </div>
 
-        <div className="p-3 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 flex justify-between text-[11px] text-zinc-500">
-          <span>↑↓ navigate • Enter select • Ctrl+K toggle • ESC close</span>
+        <div className="p-3 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 flex justify-between text-[11px] text-zinc-500 dark:text-zinc-400">
+          <span>Navigate with search · Esc to close</span>
           <span>{filtered.length} commands</span>
         </div>
       </div>
