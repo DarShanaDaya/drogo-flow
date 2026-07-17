@@ -17,8 +17,15 @@ import { ThreeDView } from '@/components/editor/ThreeDView';
 import { Toolbar } from '@/components/editor/Toolbar';
 import { DiagramSidebar } from '@/components/editor/DiagramSidebar';
 import { ThemeSwitcher } from '@/components/editor/ThemeSwitcher';
+import { AnimationMaker } from '@/components/editor/AnimationMaker';
+import { PresentationMode } from '@/components/editor/PresentationMode';
+import { CommandPalette } from '@/components/editor/CommandPalette';
+import { TemplatesModal } from '@/components/editor/TemplatesModal';
+import { AIGenerator } from '@/components/editor/AIGenerator';
+import { VersionHistory } from '@/components/editor/VersionHistory';
 import { useAuth } from '@/components/auth/AuthContext';
 import { Button } from '@/components/ui/button';
+import { useHistory } from '@/hooks/useHistory';
 
 export default function EditorPage() {
   const params = useParams();
@@ -37,10 +44,21 @@ export default function EditorPage() {
   const [svgElement, setSvgElement] = useState<SVGElement | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [showSidebar, setShowSidebar] = useState(true);
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [theme, setTheme] = useState<DiagramTheme>('default');
   const [direction, setDirection] = useState('TD');
   const [autoSave, setAutoSave] = useState(true);
   const [lastSaved, setLastSaved] = useState<string>('');
+  const [isDark, setIsDark] = useState(false);
+
+  // New feature states
+  const [isPresentation, setIsPresentation] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isTemplatesOpen, setIsTemplatesOpen] = useState(false);
+  const [showAI, setShowAI] = useState(false);
+
+  // History for undo/redo (mermaid code)
+  const history = useHistory<string>(DEFAULT_MERMAID, 30);
 
   // Load diagram
   useEffect(() => {
@@ -61,6 +79,7 @@ export default function EditorPage() {
       setNodes(parsed.nodes);
       setEdges(parsed.edges);
       setMermaidCode(DEFAULT_MERMAID);
+      history.set(DEFAULT_MERMAID);
       setDiagram(newDiagram);
       storage.saveDiagram({ ...newDiagram, nodes: parsed.nodes, edges: parsed.edges });
       router.replace(`/editor/${newId}`);
@@ -71,6 +90,7 @@ export default function EditorPage() {
     if (loaded) {
       setDiagram(loaded);
       setMermaidCode(loaded.mermaidCode);
+      history.set(loaded.mermaidCode);
       if (loaded.nodes.length === 0) {
         const parsed = parseMermaidToNodes(loaded.mermaidCode);
         setNodes(parsed.nodes);
@@ -81,7 +101,6 @@ export default function EditorPage() {
       }
       setViewMode(loaded.viewMode || 'split');
       setTheme(loaded.theme || 'default');
-      // detect direction from code
       const dirMatch = loaded.mermaidCode.match(/flowchart\s+([A-Z]{2})/);
       if (dirMatch) setDirection(dirMatch[1]);
     } else {
@@ -110,22 +129,24 @@ export default function EditorPage() {
     setIsSyncing(true);
     const code = generateMermaidFromNodes(newNodes, edges, direction);
     setMermaidCode(code);
+    history.set(code);
     setTimeout(() => setIsSyncing(false), 100);
-  }, [edges, direction]);
+  }, [edges, direction, history]);
 
   const handleEdgesChange = useCallback((newEdges: FlowEdge[]) => {
     setEdges(newEdges);
     setIsSyncing(true);
     const code = generateMermaidFromNodes(nodes, newEdges, direction);
     setMermaidCode(code);
+    history.set(code);
     setTimeout(() => setIsSyncing(false), 100);
-  }, [nodes, direction]);
+  }, [nodes, direction, history]);
 
   const handleDirectionChange = (newDir: string) => {
     setDirection(newDir);
-    // update mermaid code direction
     const updated = mermaidCode.replace(/flowchart\s+[A-Z]{2}/, `flowchart ${newDir}`);
     setMermaidCode(updated);
+    history.set(updated);
   };
 
   const handleNodeUpdate = (updated: FlowNode) => {
@@ -134,6 +155,7 @@ export default function EditorPage() {
     setSelectedNode(updated);
     const code = generateMermaidFromNodes(newNodes, edges, direction);
     setMermaidCode(code);
+    history.set(code);
   };
 
   const handleNodeDelete = (nodeId: string) => {
@@ -144,6 +166,7 @@ export default function EditorPage() {
     setSelectedNode(null);
     const code = generateMermaidFromNodes(newNodes, newEdges, direction);
     setMermaidCode(code);
+    history.set(code);
   };
 
   const handleEdgeLabelChange = (edgeId: string, label: string) => {
@@ -151,6 +174,7 @@ export default function EditorPage() {
     setEdges(newEdges);
     const code = generateMermaidFromNodes(nodes, newEdges, direction);
     setMermaidCode(code);
+    history.set(code);
   };
 
   const handleSave = useCallback(() => {
@@ -189,19 +213,15 @@ export default function EditorPage() {
     const reader = new FileReader();
     reader.onload = (ev) => {
       const content = ev.target?.result as string;
-      // Extract mermaid block if .md
       let code = content;
       const mermaidBlock = content.match(/```mermaid([\s\S]*?)```/);
-      if (mermaidBlock) {
-        code = mermaidBlock[1].trim();
-      }
+      if (mermaidBlock) code = mermaidBlock[1].trim();
       setMermaidCode(code);
+      history.set(code);
       const parsed = parseMermaidToNodes(code);
       setNodes(parsed.nodes);
       setEdges(parsed.edges);
-      if (diagram) {
-        setDiagram({ ...diagram, title: file.name.replace(/\.[^/.]+$/, ''), mermaidCode: code });
-      }
+      if (diagram) setDiagram({ ...diagram, title: file.name.replace(/\.[^/.]+$/, ''), mermaidCode: code });
     };
     reader.readAsText(file);
   };
@@ -211,13 +231,61 @@ export default function EditorPage() {
     setDiagram({ ...diagram, title: t });
   };
 
-  // Auto-save every 3s if enabled
+  const handleUndo = () => {
+    const prev = history.undo();
+    if (prev) {
+      setMermaidCode(prev);
+      const parsed = parseMermaidToNodes(prev);
+      // Keep positions
+      const posMap = new Map(nodes.map(n => [n.id, n.position]));
+      const merged = parsed.nodes.map(n => ({ ...n, position: posMap.get(n.id) || n.position }));
+      if (parsed.nodes.length > 0) {
+        setNodes(merged.length > 0 ? merged : parsed.nodes);
+        setEdges(parsed.edges);
+      }
+    }
+  };
+
+  const handleRedo = () => {
+    const next = history.redo();
+    if (next) {
+      setMermaidCode(next);
+      const parsed = parseMermaidToNodes(next);
+      const posMap = new Map(nodes.map(n => [n.id, n.position]));
+      const merged = parsed.nodes.map(n => ({ ...n, position: posMap.get(n.id) || n.position }));
+      if (parsed.nodes.length > 0) {
+        setNodes(merged.length > 0 ? merged : parsed.nodes);
+        setEdges(parsed.edges);
+      }
+    }
+  };
+
+  const handleAIGenerate = (code: string, newNodes: FlowNode[], newEdges: FlowEdge[]) => {
+    setMermaidCode(code);
+    setNodes(newNodes);
+    setEdges(newEdges);
+    history.set(code);
+    setShowAI(false);
+  };
+
+  const handleCommandAction = (action: string) => {
+    switch(action) {
+      case 'save': handleSave(); break;
+      case 'export-png': break; // toolbar handles
+      case 'share': break;
+      case 'presentation': setIsPresentation(true); break;
+      case 'animate': setViewMode('animate'); break;
+      case 'dashboard': router.push('/dashboard'); break;
+      case 'pricing': router.push('/pricing'); break;
+      case 'toggle-palette': setIsCommandPaletteOpen(!isCommandPaletteOpen); break;
+    }
+  };
+
+  // Auto-save
   useEffect(() => {
     if (!autoSave) return;
     const interval = setInterval(() => {
-      if (diagram && (nodes.length > 0 || mermaidCode !== DEFAULT_MERMAID)) {
-        handleSave();
-      }
+      if (diagram && (nodes.length > 0 || mermaidCode !== DEFAULT_MERMAID)) handleSave();
     }, 3000);
     return () => clearInterval(interval);
   }, [autoSave, diagram, nodes, mermaidCode, handleSave]);
@@ -225,18 +293,22 @@ export default function EditorPage() {
   // Keyboard shortcuts
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-        e.preventDefault();
-        handleSave();
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
-        e.preventDefault();
-        setShowSidebar(!showSidebar);
-      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); handleSave(); }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'b') { e.preventDefault(); setShowSidebar(!showSidebar); }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); setIsCommandPaletteOpen(!isCommandPaletteOpen); }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); handleUndo(); }
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); handleRedo(); }
+      if (e.key === 'F5' || (e.key === 'F' && e.shiftKey)) { /* presentation */ }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [handleSave, showSidebar]);
+  }, [handleSave, showSidebar, isCommandPaletteOpen]);
+
+  // Dark mode toggle effect
+  useEffect(() => {
+    if (isDark) document.documentElement.classList.add('dark');
+    else document.documentElement.classList.remove('dark');
+  }, [isDark]);
 
   if (!diagram) {
     return (
@@ -249,27 +321,25 @@ export default function EditorPage() {
     );
   }
 
+  if (isPresentation) {
+    return <PresentationMode nodes={nodes} edges={edges} mermaidCode={mermaidCode} onExit={() => setIsPresentation(false)} />;
+  }
+
   const renderCenter = () => {
     switch(viewMode) {
       case 'flow':
-        return (
-          <div className="flex-1 flex flex-col min-w-0">
-            <DragDropBuilder nodes={nodes} edges={edges} onNodesChange={handleNodesChange} onEdgesChange={handleEdgesChange} onNodeSelect={setSelectedNode} />
-          </div>
-        );
+        return <div className="flex-1 flex flex-col min-w-0"><DragDropBuilder nodes={nodes} edges={edges} onNodesChange={handleNodesChange} onEdgesChange={handleEdgesChange} onNodeSelect={setSelectedNode} /></div>;
       case 'graph':
         return <GraphView mermaidCode={mermaidCode} nodes={nodes} edges={edges} />;
       case '3d':
         return <ThreeDView nodes={nodes} edges={edges} />;
+      case 'animate':
+        return <AnimationMaker nodes={nodes} edges={edges} mermaidCode={mermaidCode} onClose={() => setViewMode('split')} />;
       case 'text':
         return (
           <div className="flex-1 flex">
-            <div className="w-[50%] border-r">
-              <TextBuilder code={mermaidCode} onChange={setMermaidCode} />
-            </div>
-            <div className="w-[50%] bg-zinc-50 dark:bg-zinc-900 p-4 overflow-auto">
-              <MermaidRenderer code={mermaidCode} onSvgReady={setSvgElement} />
-            </div>
+            <div className="w-[50%] border-r"><TextBuilder code={mermaidCode} onChange={(c) => { setMermaidCode(c); history.set(c); }} /></div>
+            <div className="w-[50%] bg-zinc-50 dark:bg-zinc-900 p-4 overflow-auto"><MermaidRenderer code={mermaidCode} onSvgReady={setSvgElement} /></div>
           </div>
         );
       case 'split':
@@ -277,7 +347,13 @@ export default function EditorPage() {
         return (
           <div className="flex-1 flex min-h-0">
             <div className="w-[380px] shrink-0 border-r border-zinc-200 dark:border-zinc-800 flex flex-col">
-              <TextBuilder code={mermaidCode} onChange={setMermaidCode} />
+              {showAI ? (
+                <div className="p-3 border-b">
+                  <AIGenerator onGenerate={handleAIGenerate} credits={user?.credits || 100} />
+                  <Button size="sm" variant="ghost" className="w-full mt-2 h-7 text-xs" onClick={() => setShowAI(false)}>Hide AI</Button>
+                </div>
+              ) : null}
+              <TextBuilder code={mermaidCode} onChange={(c) => { setMermaidCode(c); history.set(c); }} />
             </div>
             <div className="flex-1 flex flex-col min-w-0 bg-zinc-50 dark:bg-zinc-900">
               <div className="flex-1 p-3 overflow-auto">
@@ -295,32 +371,29 @@ export default function EditorPage() {
   return (
     <div className="h-screen flex flex-col bg-white dark:bg-zinc-950">
       <header className="h-14 border-b border-zinc-200 dark:border-zinc-800 flex items-center px-3 gap-2 shrink-0 bg-white dark:bg-zinc-950">
-        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setShowSidebar(!showSidebar)}>
-          ☰
-        </Button>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setShowSidebar(!showSidebar)}>☰</Button>
         <Link href="/" className="flex items-center gap-2 font-bold">
           <span className="w-7 h-7 rounded bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center text-sm">D</span>
           <span className="hidden sm:inline">Drogo</span>
         </Link>
         <div className="h-6 w-px bg-zinc-200 dark:bg-zinc-800 hidden sm:block" />
-        <span className="text-xs px-2 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 hidden md:inline">
-          {user?.plan || 'free'} • {user?.credits || 100} credits
-        </span>
-        <div className="ml-2 hidden lg:flex">
-          <ViewSwitcher view={viewMode} onChange={setViewMode} />
-        </div>
-        <div className="ml-2 hidden md:flex">
-          <ThemeSwitcher theme={theme} onChange={setTheme} direction={direction} onDirectionChange={handleDirectionChange} />
-        </div>
-        <div className="ml-auto flex items-center gap-1.5">
+        <span className="text-xs px-2 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 hidden md:inline">{user?.plan || 'free'} • {user?.credits || 100} cr</span>
+        <div className="ml-2 hidden lg:flex"><ViewSwitcher view={viewMode} onChange={setViewMode} /></div>
+        <div className="ml-2 hidden md:flex"><ThemeSwitcher theme={theme} onChange={setTheme} direction={direction} onDirectionChange={handleDirectionChange} /></div>
+        <div className="ml-auto flex items-center gap-1">
+          <Button variant="ghost" size="sm" className="h-7 text-xs hidden sm:flex" onClick={handleUndo} disabled={!history.canUndo}>↩️ Undo</Button>
+          <Button variant="ghost" size="sm" className="h-7 text-xs hidden sm:flex" onClick={handleRedo} disabled={!history.canRedo}>↪️ Redo</Button>
           <input ref={fileInputRef} type="file" accept=".md,.mmd,.txt,.json" className="hidden" onChange={handleImport} />
-          <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => fileInputRef.current?.click()}>Import</Button>
-          <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={handleDuplicate}>Duplicate</Button>
-          <Link href="/pricing" className="hidden sm:inline text-xs px-3 py-1.5 bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300 rounded-full border border-green-200 dark:border-green-800">
-            Save 60% • $39.9 vs $99.9
-          </Link>
-          <Link href="/dashboard" className="text-sm px-2 hidden sm:inline">Dashboard</Link>
-          <Link href="/" className="text-sm px-2 hidden sm:inline">Home</Link>
+          <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => fileInputRef.current?.click()}>Import</Button>
+          <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setIsTemplatesOpen(true)}>Templates</Button>
+          <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setShowAI(!showAI)}>✨ AI</Button>
+          <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setShowVersionHistory(!showVersionHistory)}>History</Button>
+          <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setIsDark(!isDark)}>{isDark ? '☀️' : '🌙'}</Button>
+          <Button variant="ghost" size="sm" className="h-7 text-xs hidden md:flex" onClick={() => setIsPresentation(true)}>🎥 Present</Button>
+          <Button variant="ghost" size="sm" className="h-7 text-xs hidden md:flex" onClick={() => setIsCommandPaletteOpen(true)}>⌘K</Button>
+          <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={handleDuplicate}>Dup</Button>
+          <Link href="/pricing" className="hidden sm:inline text-xs px-2.5 py-1 bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300 rounded-full border border-green-200 dark:border-green-800">Save 60%</Link>
+          <Link href="/dashboard" className="text-xs px-2 hidden sm:inline">Dash</Link>
         </div>
       </header>
 
@@ -335,7 +408,7 @@ export default function EditorPage() {
           </div>
           <div className="flex-1 flex min-h-0 overflow-hidden">
             {renderCenter()}
-            {(viewMode === 'flow' || viewMode === 'split') && (
+            {(viewMode === 'flow' || viewMode === 'split') && !showVersionHistory && (
               <div className="flex">
                 {selectedEdge && (
                   <div className="w-[320px] border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-4 flex flex-col gap-4">
@@ -343,41 +416,28 @@ export default function EditorPage() {
                     <p className="text-xs text-zinc-500">{selectedEdge.source} → {selectedEdge.target}</p>
                     <div>
                       <label className="text-xs font-semibold">Label</label>
-                      <input
-                        value={selectedEdge.label || ''}
-                        onChange={(e) => {
-                          const newEdge = { ...selectedEdge, label: e.target.value };
-                          setSelectedEdge(newEdge);
-                          handleEdgeLabelChange(newEdge.id, e.target.value);
-                        }}
-                        className="w-full mt-1 h-9 px-3 rounded-md border text-sm"
-                        placeholder="Edge label (e.g. Yes)"
-                      />
+                      <input value={selectedEdge.label || ''} onChange={(e) => { const ne = { ...selectedEdge, label: e.target.value }; setSelectedEdge(ne); handleEdgeLabelChange(ne.id, e.target.value); }} className="w-full mt-1 h-9 px-3 rounded-md border text-sm" placeholder="Yes/No" />
                     </div>
-                    <Button size="sm" variant="outline" onClick={() => {
-                      const newEdges = edges.filter(e => e.id !== selectedEdge.id);
-                      setEdges(newEdges);
-                      setSelectedEdge(null);
-                      const code = generateMermaidFromNodes(nodes, newEdges, direction);
-                      setMermaidCode(code);
-                    }}>Delete Edge</Button>
+                    <Button size="sm" variant="outline" onClick={() => { const ne = edges.filter(e => e.id !== selectedEdge.id); setEdges(ne); setSelectedEdge(null); const code = generateMermaidFromNodes(nodes, ne, direction); setMermaidCode(code); history.set(code); }}>Delete Edge</Button>
                   </div>
                 )}
-                {!selectedEdge && (
-                  <PropertiesPanel selectedNode={selectedNode} onUpdate={handleNodeUpdate} onDelete={handleNodeDelete} selectedEdge={selectedEdge} />
-                )}
+                {!selectedEdge && <PropertiesPanel selectedNode={selectedNode} onUpdate={handleNodeUpdate} onDelete={handleNodeDelete} selectedEdge={selectedEdge} />}
               </div>
             )}
+            {showVersionHistory && <VersionHistory diagramId={diagram.id} currentCode={mermaidCode} onRestore={(code) => { setMermaidCode(code); history.set(code); const parsed = parseMermaidToNodes(code); setNodes(parsed.nodes); setEdges(parsed.edges); }} />}
           </div>
         </div>
       </div>
 
-      <footer className="h-8 border-t border-zinc-200 dark:border-zinc-800 flex items-center px-3 text-[11px] text-zinc-500 bg-zinc-50 dark:bg-zinc-900 gap-4">
-        <span className="hidden sm:inline">{nodes.length} nodes • {edges.length} edges • {mermaidCode.length} chars • {autoSave ? `Auto-save on ${lastSaved ? `• Saved ${lastSaved}` : ''}` : 'Auto-save off'} • {isSyncing ? 'Syncing...' : 'Synced'}</span>
-        <span className="sm:hidden">{nodes.length}N {edges.length}E • {lastSaved && `Saved ${lastSaved}`}</span>
-        <span className="ml-auto hidden md:inline">Shortcuts: Ctrl+S save, Ctrl+B sidebar • Exports: .md .png .jpeg .svg .pdf .git – Vercel hostable</span>
+      <footer className="h-8 border-t border-zinc-200 dark:border-zinc-800 flex items-center px-3 text-[11px] text-zinc-500 bg-zinc-50 dark:bg-zinc-900 gap-3">
+        <span className="hidden sm:inline">{nodes.length}N • {edges.length}E • {mermaidCode.length} chars • {autoSave ? `Auto ${lastSaved ? `• ${lastSaved}` : ''}` : 'Manual'} • {history.canUndo ? 'Undo✓' : ''} {history.canRedo ? 'Redo✓' : ''} • {isSyncing ? 'Syncing' : 'Synced'}</span>
+        <span className="sm:hidden">{nodes.length}N {edges.length}E</span>
+        <span className="ml-auto hidden lg:inline">Shortcuts: Ctrl+S save, Ctrl+Z/Y undo/redo, Ctrl+K palette, Ctrl+B sidebar • Exports: .md .png .jpeg .svg .pdf .git • Animate 🎬 Cast 🎥</span>
         <button onClick={() => setAutoSave(!autoSave)} className="px-2 py-0.5 border rounded text-[10px]">{autoSave ? 'Auto' : 'Manual'}</button>
       </footer>
+
+      <CommandPalette isOpen={isCommandPaletteOpen} onClose={() => setIsCommandPaletteOpen(false)} onAction={handleCommandAction} viewMode={viewMode} onViewChange={setViewMode} />
+      <TemplatesModal isOpen={isTemplatesOpen} onClose={() => setIsTemplatesOpen(false)} onSelect={(code) => { setMermaidCode(code); history.set(code); const parsed = parseMermaidToNodes(code); setNodes(parsed.nodes); setEdges(parsed.edges); }} />
     </div>
   );
 }

@@ -35,7 +35,24 @@ export type FlowEdge = {
   type?: string;
 };
 
-export type ViewMode = 'flow' | 'graph' | '3d' | 'text' | 'split';
+export type ViewMode = 'flow' | 'graph' | '3d' | 'text' | 'split' | 'animate';
+
+export type AnimationStep = {
+  id: string;
+  nodeIds: string[];
+  edgeIds: string[];
+  title?: string;
+  duration: number; // ms
+  animationType: 'fade' | 'slide' | 'scale' | 'draw' | 'pop';
+  delay: number;
+};
+
+export type AnimationConfig = {
+  steps: AnimationStep[];
+  loop: boolean;
+  speed: number;
+  autoPlay: boolean;
+};
 
 export type DiagramTheme = 'default' | 'dark' | 'forest' | 'neutral' | 'base';
 
@@ -52,6 +69,7 @@ export type Diagram = {
   ownerId?: string;
   isPublic?: boolean;
   description?: string;
+  animation?: AnimationConfig;
 };
 
 export type UserPlan = 'free' | 'starter' | 'pro' | 'monthly';

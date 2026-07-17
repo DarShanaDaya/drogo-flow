@@ -14,6 +14,7 @@ const VIEWS: { id: ViewMode; label: string; icon: string }[] = [
   { id: '3d', label: '3D', icon: '🧊' },
   { id: 'text', label: 'Text', icon: '📝' },
   { id: 'split', label: 'Split', icon: '⬌' },
+  { id: 'animate', label: 'Animate', icon: '🎬' },
 ];
 
 export function ViewSwitcher({ view, onChange }: Props) {
