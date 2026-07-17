@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+/* React Flow overrides */
+.react-flow__node {
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.mermaid-container svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Grid pattern */
+.bg-grid-zinc-100 {
+  background-image: 
+    linear-gradient(to right, #f4f4f5 1px, transparent 1px),
+    linear-gradient(to bottom, #f4f4f5 1px, transparent 1px);
+}
+.dark .bg-grid-zinc-800\/50 {
+  background-image: 
+    linear-gradient(to right, #27272a 1px, transparent 1px),
+    linear-gradient(to bottom, #27272a 1px, transparent 1px);
+}
