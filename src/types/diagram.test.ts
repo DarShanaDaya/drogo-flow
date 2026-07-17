@@ -4,13 +4,13 @@ import { NODE_COLORS, DEFAULT_MERMAID } from './diagram';
 describe('diagram types', () => {
   it('has node colors for all types', () => {
     expect(NODE_COLORS.start).toBe('#10b981');
-    expect(NODE_COLORS.end).toBe('#ef4444');
+    expect(NODE_COLORS.end).toBe('#f43f5e');
     expect(NODE_COLORS.process).toBe('#3b82f6');
-    expect(NODE_COLORS.decision).toBe('#f59e0b');
+    expect(NODE_COLORS.decision).toBe('#d97706');
     expect(NODE_COLORS.database).toBe('#8b5cf6');
-    expect(NODE_COLORS.input).toBe('#06b6d4');
-    expect(NODE_COLORS.subprocess).toBe('#ec4899');
-    expect(NODE_COLORS.custom).toBe('#6b7280');
+    expect(NODE_COLORS.input).toBe('#0284c7');
+    expect(NODE_COLORS.subprocess).toBe('#d946ef');
+    expect(NODE_COLORS.custom).toBe('#64748b');
   });
 
   it('has default mermaid example', () => {

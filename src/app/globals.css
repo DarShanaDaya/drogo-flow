@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fafafa;
+  --background: #fcfcfc;
   --foreground: #09090b;
   --card: #ffffff;
   --card-foreground: #09090b;
@@ -23,14 +23,14 @@
 .dark {
   --background: #09090b;
   --foreground: #fafafa;
-  --card: #0a0a0b;
+  --card: #121215;
   --card-foreground: #fafafa;
-  --popover: #09090b;
+  --popover: #121215;
   --primary: #fafafa;
   --primary-foreground: #18181b;
-  --secondary: #27272a;
+  --secondary: #1f1f23;
   --secondary-foreground: #fafafa;
-  --muted: #27272a;
+  --muted: #1f1f23;
   --muted-foreground: #a1a1aa;
   --accent: #27272a;
   --accent-foreground: #fafafa;
@@ -72,7 +72,7 @@ body {
 
 /* Smooth transitions for theme switching */
 html {
-  transition: color-scheme 0.3s;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Refined scrollbar */
@@ -110,28 +110,28 @@ html {
 /* Subtle grid pattern */
 .bg-grid-pattern {
   background-image: 
-    linear-gradient(to right, rgba(0,0,0,0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0,0,0,0.03) 1px, transparent 1px);
+    linear-gradient(to right, rgba(0,0,0,0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0,0,0,0.04) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 .dark .bg-grid-pattern {
   background-image: 
-    linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+    linear-gradient(to right, rgba(255,255,255,0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.04) 1px, transparent 1px);
 }
 
 /* Dot grid pattern */
 .bg-dot-pattern {
-  background-image: radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px);
+  background-image: radial-gradient(circle, rgba(0,0,0,0.07) 1px, transparent 1px);
   background-size: 20px 20px;
 }
 .dark .bg-dot-pattern {
-  background-image: radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-image: radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px);
 }
 
 /* Gradient text */
 .text-gradient {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7);
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -139,12 +139,12 @@ html {
 
 /* Glass morphism */
 .glass {
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.82);
   backdrop-filter: blur(12px) saturate(180%);
   -webkit-backdrop-filter: blur(12px) saturate(180%);
 }
 .dark .glass {
-  background: rgba(9, 9, 11, 0.7);
+  background: rgba(9, 9, 11, 0.82);
 }
 
 /* Focus ring */
