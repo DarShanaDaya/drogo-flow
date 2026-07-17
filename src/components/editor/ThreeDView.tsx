@@ -1,6 +1,6 @@
 'use client';
 import { useRef, useMemo, useState } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Text, Line, Float, PerspectiveCamera, Stars, MeshDistortMaterial, RoundedBox } from '@react-three/drei';
 import { FlowNode, FlowEdge, NodeType } from '@/types/diagram';
 import * as THREE from 'three';
@@ -199,7 +199,40 @@ function Edge3D({ start, end, color }: { start: [number, number, number]; end: [
   );
 }
 
-function Scene({ nodes, edges, layout, bgColor }: { nodes: FlowNode[]; edges: FlowEdge[]; layout: string; bgColor: string }) {
+function WalkthroughCamera({ positions, isWalking }: { positions: Map<string, [number,number,number]>; isWalking: boolean }) {
+  const { camera } = useThree();
+  const progressRef = useRef(0);
+  const nodeIndexRef = useRef(0);
+  const nodeKeys = useMemo(() => Array.from(positions.keys()), [positions]);
+
+  useFrame((state, delta) => {
+    if (!isWalking || nodeKeys.length === 0) return;
+
+    const currentNode = positions.get(nodeKeys[nodeIndexRef.current]) || [0, 0, 0];
+    const nextIndex = (nodeIndexRef.current + 1) % nodeKeys.length;
+    const nextNode = positions.get(nodeKeys[nextIndex]) || [0, 0, 0];
+
+    // Progress along current segment
+    progressRef.current += delta * 0.8; // speed
+    if (progressRef.current >= 1) {
+      progressRef.current = 0;
+      nodeIndexRef.current = nextIndex;
+    }
+
+    // Smooth lerp between nodes
+    const t = progressRef.current;
+    const camX = THREE.MathUtils.lerp(currentNode[0], nextNode[0], t);
+    const camY = THREE.MathUtils.lerp(currentNode[1] + 3.5, nextNode[1] + 3.5, t);
+    const camZ = THREE.MathUtils.lerp(currentNode[2] + 4.2, nextNode[2] + 4.2, t);
+
+    camera.position.lerp(new THREE.Vector3(camX, camY, camZ), 0.08);
+    camera.lookAt(nextNode[0], nextNode[1], nextNode[2]);
+  });
+
+  return null;
+}
+
+function Scene({ nodes, edges, layout, bgColor, isWalking }: { nodes: FlowNode[]; edges: FlowEdge[]; layout: string; bgColor: string; isWalking: boolean }) {
   const positions = useMemo(() => {
     const posMap = new Map<string, [number, number, number]>();
     const n = nodes.length;
@@ -252,6 +285,9 @@ function Scene({ nodes, edges, layout, bgColor }: { nodes: FlowNode[]; edges: Fl
     <>
       <color attach="background" args={[bgColor]} />
       <fog attach="fog" args={[bgColor, 12, 30]} />
+      {isWalking && <pointLight position={[0, 8, 0]} intensity={2} color="#fff" />}
+
+      <WalkthroughCamera positions={nodePositions} isWalking={isWalking} />
       
       {/* Lighting */}
       <ambientLight intensity={0.5} />
@@ -306,6 +342,7 @@ export function ThreeDView({ nodes, edges }: Props) {
   const [layout, setLayout] = useState<Layout>('spiral');
   const [bgTheme, setBgTheme] = useState<BgTheme>('dark');
   const [showPanel, setShowPanel] = useState(true);
+  const [isWalking, setIsWalking] = useState(false);
 
   if (nodes.length === 0) {
     return (
@@ -327,7 +364,7 @@ export function ThreeDView({ nodes, edges }: Props) {
     <div className="w-full h-full relative" style={{ background: BG_COLORS[bgTheme] }}>
       <Canvas className="w-full h-full" camera={{ position: [0, 5, 10], fov: 55 }}>
         <PerspectiveCamera makeDefault position={[8, 5, 8]} />
-        <Scene nodes={nodes} edges={edges} layout={layout} bgColor={BG_COLORS[bgTheme]} />
+        <Scene nodes={nodes} edges={edges} layout={layout} bgColor={BG_COLORS[bgTheme]} isWalking={isWalking} />
         <OrbitControls autoRotate={autoRotate} autoRotateSpeed={0.5} enableDamping dampingFactor={0.05} />
       </Canvas>
 
@@ -400,6 +437,13 @@ export function ThreeDView({ nodes, edges }: Props) {
               />
               <span className="text-[11px] text-white/80">Auto-rotate</span>
             </label>
+
+            <button
+              onClick={() => setIsWalking(!isWalking)}
+              className="mt-2 w-full px-3 py-1.5 text-xs bg-white/10 hover:bg-white/20 rounded-lg border border-white/10 transition"
+            >
+              {isWalking ? '⏹ Stop Walkthrough' : '🚶 Street View Walkthrough'}
+            </button>
           </div>
 
           <div className="mt-3 pt-3 border-t border-white/10">
@@ -434,6 +478,13 @@ export function ThreeDView({ nodes, edges }: Props) {
         </span>
         <span className="text-white/50">{layout}</span>
       </div>
+
+      {isWalking && (
+        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 bg-black/70 text-white px-4 py-1 rounded-full text-xs flex items-center gap-2">
+          🚶 Walking through process... (click to stop)
+          <button onClick={() => setIsWalking(false)} className="underline">Stop</button>
+        </div>
+      )}
     </div>
   );
 }
