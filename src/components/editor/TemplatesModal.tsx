@@ -139,47 +139,65 @@ export function TemplatesModal({ isOpen, onClose, onSelect }: Props) {
   );
 
   return (
-    <div className="fixed inset-0 z-[150] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="w-full max-w-4xl bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 max-h-[80vh] flex flex-col">
-        <div className="p-6 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+    <div className="fixed inset-0 z-[150] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+      <div className="w-full max-w-4xl bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 max-h-[80vh] flex flex-col animate-slide-up">
+        <div className="p-5 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
           <div>
-            <h2 className="font-bold text-lg">Templates Gallery</h2>
-            <p className="text-xs text-zinc-500 mt-1">Start from template – drag-drop, text, 3D, animate, exports included</p>
+            <h2 className="font-semibold text-lg text-zinc-900 dark:text-zinc-50">Templates</h2>
+            <p className="text-xs text-zinc-500 mt-1">Start from a template and customize</p>
           </div>
-          <Button size="sm" variant="ghost" onClick={onClose}>✕</Button>
+          <Button size="sm" variant="ghost" onClick={onClose} className="h-8 w-8 p-0 rounded-lg">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+          </Button>
         </div>
 
         <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 flex gap-3 items-center">
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search templates..." className="flex-1 h-9 px-3 rounded-lg border bg-zinc-50 dark:bg-zinc-800 text-sm" />
-          <div className="flex gap-1.5">
+          <input 
+            value={search} 
+            onChange={e => setSearch(e.target.value)} 
+            placeholder="Search templates..." 
+            className="flex-1 h-9 px-3 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-zinc-50/10" 
+          />
+          <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
             {categories.map(c => (
-              <button key={c} onClick={() => setCategory(c)} className={`px-3 py-1.5 rounded-full text-xs border ${category === c ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 border-zinc-900' : 'bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700'}`}>{c}</button>
+              <button 
+                key={c} 
+                onClick={() => setCategory(c)} 
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors whitespace-nowrap ${
+                  category === c 
+                    ? 'bg-zinc-900 text-white dark:bg-zinc-50 dark:text-zinc-900 border-zinc-900 dark:border-zinc-50' 
+                    : 'bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700'
+                }`}
+              >
+                {c}
+              </button>
             ))}
           </div>
         </div>
 
         <div className="flex-1 overflow-auto p-4 grid md:grid-cols-2 gap-4">
           {filtered.map(t => (
-            <div key={t.id} className="border rounded-xl p-4 bg-white dark:bg-zinc-900 hover:shadow-md transition-shadow flex flex-col">
+            <div key={t.id} className="border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all flex flex-col">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="font-semibold text-sm flex items-center gap-2">
+                  <p className="font-medium text-sm text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
                     {t.title}
-                    {t.popular && <span className="px-1.5 py-0.5 bg-violet-100 dark:bg-violet-900 text-violet-700 dark:text-violet-300 rounded text-[10px]">POPULAR</span>}
+                    {t.popular && (
+                      <span className="px-1.5 py-0.5 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 rounded text-[10px] font-semibold">Popular</span>
+                    )}
                   </p>
                   <p className="text-xs text-zinc-500 mt-1">{t.description}</p>
-                  <span className="mt-2 inline-block px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded-full text-[10px]">{t.category}</span>
+                  <span className="mt-2 inline-block px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded-full text-[10px] font-medium text-zinc-600 dark:text-zinc-400">{t.category}</span>
                 </div>
-                <Button size="sm" className="h-7 text-xs" onClick={() => { onSelect(t.code); onClose(); }}>Use</Button>
+                <Button size="xs" className="rounded-lg" onClick={() => { onSelect(t.code); onClose(); }}>Use</Button>
               </div>
-              <pre className="mt-3 p-3 bg-zinc-950 text-zinc-100 rounded-lg text-[11px] overflow-auto max-h-[120px]">{t.code}</pre>
+              <pre className="mt-3 p-3 bg-zinc-950 text-zinc-300 rounded-lg text-[11px] overflow-auto max-h-[120px] leading-5 font-mono">{t.code}</pre>
             </div>
           ))}
         </div>
 
-        <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 flex justify-between items-center text-xs text-zinc-500">
-          <span>{filtered.length} templates • All include animation, 3D, exports MD/PNG/JPEG/SVG/PDF/Git</span>
-          <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-full border">60% cheaper than mermaidonline.live</span>
+        <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 flex justify-between items-center text-xs text-zinc-500">
+          <span>{filtered.length} templates available</span>
         </div>
       </div>
     </div>

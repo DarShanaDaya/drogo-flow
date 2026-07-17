@@ -19,7 +19,7 @@ const COMMANDS = [
   { id: 'presentation', label: 'Presentation Mode', shortcut: '', icon: '🎥' },
   { id: 'animate', label: 'Animation Maker', shortcut: '', icon: '🎬' },
   { id: 'dashboard', label: 'Go to Dashboard', shortcut: '', icon: '📊' },
-  { id: 'pricing', label: 'View Pricing – Save 60%', shortcut: '', icon: '💸' },
+  { id: 'pricing', label: 'View Pricing', shortcut: '', icon: '💎' },
   { id: 'view-flow', label: 'Switch to Flow View', view: 'flow', icon: '🌊' },
   { id: 'view-text', label: 'Switch to Text View', view: 'text', icon: '📝' },
   { id: 'view-3d', label: 'Switch to 3D View', view: '3d', icon: '🧊' },

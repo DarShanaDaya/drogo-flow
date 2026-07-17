@@ -155,10 +155,10 @@ export function AIGenerator({ onGenerate, credits }: Props) {
       )}
 
       {credits <= 0 && (
-        <p className="mt-2 text-xs text-red-600">No credits left. Upgrade plan – $4.9 vs $8.9 saves 44%!</p>
+        <p className="mt-2 text-xs text-red-600">No credits remaining. <a href="/pricing" className="underline font-medium">View plans</a> to get more.</p>
       )}
 
-      <p className="mt-2 text-[10px] text-zinc-500">Mock AI – consumes 1 credit per generation. Real AI would use OpenAI/mermaid-ai. Same credit system as mermaidonline.live but cheaper.</p>
+      <p className="mt-2 text-[10px] text-zinc-500">Uses 1 credit per generation. Powered by mock AI for demo — production would use an LLM API.</p>
     </div>
   );
 }

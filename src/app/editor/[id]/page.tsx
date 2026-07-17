@@ -24,13 +24,14 @@ import { TemplatesModal } from '@/components/editor/TemplatesModal';
 import { AIGenerator } from '@/components/editor/AIGenerator';
 import { VersionHistory } from '@/components/editor/VersionHistory';
 import { useAuth } from '@/components/auth/AuthContext';
+import { UserMenu } from '@/components/auth/UserMenu';
 import { Button } from '@/components/ui/button';
 import { useHistory } from '@/hooks/useHistory';
 
 export default function EditorPage() {
   const params = useParams();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isAuthenticated, isPaid } = useAuth();
   const id = params.id as string;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -281,14 +282,14 @@ export default function EditorPage() {
     }
   };
 
-  // Auto-save
+  // Auto-save (only for logged-in paid users)
   useEffect(() => {
-    if (!autoSave) return;
+    if (!autoSave || !user || user.plan === 'free') return;
     const interval = setInterval(() => {
       if (diagram && (nodes.length > 0 || mermaidCode !== DEFAULT_MERMAID)) handleSave();
     }, 3000);
     return () => clearInterval(interval);
-  }, [autoSave, diagram, nodes, mermaidCode, handleSave]);
+  }, [autoSave, diagram, nodes, mermaidCode, handleSave, user]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -368,36 +369,58 @@ export default function EditorPage() {
     }
   };
 
+  const isAnonymous = !isAuthenticated;
+
   return (
     <div className="h-screen flex flex-col bg-white dark:bg-zinc-950">
+      {/* Anonymous user banner */}
+      {isAnonymous && (
+        <div className="h-10 bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-800 flex items-center justify-center gap-3 text-xs text-amber-800 dark:text-amber-200 shrink-0">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>
+          <span>You&apos;re drawing as a guest. <Link href={`/login?callbackUrl=${encodeURIComponent(`/editor/${id}`)}`} className="font-semibold underline underline-offset-2">Sign in</Link> to save your work.</span>
+        </div>
+      )}
+      {!isAnonymous && !isPaid && (
+        <div className="h-10 bg-indigo-50 dark:bg-indigo-950/30 border-b border-indigo-200 dark:border-indigo-800 flex items-center justify-center gap-3 text-xs text-indigo-800 dark:text-indigo-200 shrink-0">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" /></svg>
+          <span>Free plan — diagrams are saved locally only. <Link href="/pricing" className="font-semibold underline underline-offset-2">Upgrade</Link> for cloud save and more credits.</span>
+        </div>
+      )}
+
       <header className="h-14 border-b border-zinc-200 dark:border-zinc-800 flex items-center px-3 gap-2 shrink-0 bg-white dark:bg-zinc-950">
-        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setShowSidebar(!showSidebar)}>☰</Button>
-        <Link href="/" className="flex items-center gap-2 font-bold">
-          <span className="w-7 h-7 rounded bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center text-sm">D</span>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setShowSidebar(!showSidebar)}>
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+        </Button>
+        <Link href="/" className="flex items-center gap-2 font-semibold text-zinc-900 dark:text-zinc-50">
+          <span className="w-7 h-7 rounded-lg bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 flex items-center justify-center text-sm font-bold">D</span>
           <span className="hidden sm:inline">Drogo</span>
         </Link>
-        <div className="h-6 w-px bg-zinc-200 dark:bg-zinc-800 hidden sm:block" />
-        <span className="text-xs px-2 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 hidden md:inline">{user?.plan || 'free'} • {user?.credits || 100} cr</span>
+        <div className="h-5 w-px bg-zinc-200 dark:bg-zinc-800 hidden sm:block" />
         <div className="ml-2 hidden lg:flex"><ViewSwitcher view={viewMode} onChange={setViewMode} /></div>
         <div className="ml-2 hidden md:flex"><ThemeSwitcher theme={theme} onChange={setTheme} direction={direction} onDirectionChange={handleDirectionChange} /></div>
         <div className="ml-auto flex items-center gap-1">
-          <Button variant="ghost" size="sm" className="h-7 text-xs hidden sm:flex" onClick={handleUndo} disabled={!history.canUndo}>↩️ Undo</Button>
-          <Button variant="ghost" size="sm" className="h-7 text-xs hidden sm:flex" onClick={handleRedo} disabled={!history.canRedo}>↪️ Redo</Button>
+          <Button variant="ghost" size="sm" className="h-7 text-xs hidden sm:flex" onClick={handleUndo} disabled={!history.canUndo}>
+            <svg className="w-3.5 h-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" /></svg>
+            Undo
+          </Button>
+          <Button variant="ghost" size="sm" className="h-7 text-xs hidden sm:flex" onClick={handleRedo} disabled={!history.canRedo}>
+            <svg className="w-3.5 h-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 15l6-6m0 0l-6-6m6 6H9a6 6 0 000 12h3" /></svg>
+            Redo
+          </Button>
           <input ref={fileInputRef} type="file" accept=".md,.mmd,.txt,.json" className="hidden" onChange={handleImport} />
           <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => fileInputRef.current?.click()}>Import</Button>
           <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setIsTemplatesOpen(true)}>Templates</Button>
-          <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setShowAI(!showAI)}>✨ AI</Button>
+          <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setShowAI(!showAI)}>AI</Button>
           <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setShowVersionHistory(!showVersionHistory)}>History</Button>
           <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setIsDark(!isDark)}>{isDark ? '☀️' : '🌙'}</Button>
-          <Button variant="ghost" size="sm" className="h-7 text-xs hidden md:flex" onClick={() => setIsPresentation(true)}>🎥 Present</Button>
+          <Button variant="ghost" size="sm" className="h-7 text-xs hidden md:flex" onClick={() => setIsPresentation(true)}>Present</Button>
           <Button variant="ghost" size="sm" className="h-7 text-xs hidden md:flex" onClick={() => setIsCommandPaletteOpen(true)}>⌘K</Button>
-          <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={handleDuplicate}>Dup</Button>
-          <Link href="/pricing" className="hidden sm:inline text-xs px-2.5 py-1 bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300 rounded-full border border-green-200 dark:border-green-800">Save 60%</Link>
-          <Link href="/dashboard" className="text-xs px-2 hidden sm:inline">Dash</Link>
+          <div className="h-5 w-px bg-zinc-200 dark:bg-zinc-800 mx-1 hidden sm:block" />
+          <UserMenu />
         </div>
       </header>
 
-      <Toolbar title={diagram.title} mermaidCode={mermaidCode} svgElement={svgElement} onTitleChange={handleTitleChange} onSave={handleSave} />
+      <Toolbar title={diagram.title} mermaidCode={mermaidCode} svgElement={svgElement} onTitleChange={handleTitleChange} onSave={handleSave} isLoggedIn={isAuthenticated} isPaid={isPaid} />
 
       <div className="flex-1 flex min-h-0 overflow-hidden">
         {showSidebar && <DiagramSidebar currentId={diagram.id} />}
@@ -432,7 +455,7 @@ export default function EditorPage() {
       <footer className="h-8 border-t border-zinc-200 dark:border-zinc-800 flex items-center px-3 text-[11px] text-zinc-500 bg-zinc-50 dark:bg-zinc-900 gap-3">
         <span className="hidden sm:inline">{nodes.length}N • {edges.length}E • {mermaidCode.length} chars • {autoSave ? `Auto ${lastSaved ? `• ${lastSaved}` : ''}` : 'Manual'} • {history.canUndo ? 'Undo✓' : ''} {history.canRedo ? 'Redo✓' : ''} • {isSyncing ? 'Syncing' : 'Synced'}</span>
         <span className="sm:hidden">{nodes.length}N {edges.length}E</span>
-        <span className="ml-auto hidden lg:inline">Shortcuts: Ctrl+S save, Ctrl+Z/Y undo/redo, Ctrl+K palette, Ctrl+B sidebar • Exports: .md .png .jpeg .svg .pdf .git • Animate 🎬 Cast 🎥</span>
+        <span className="ml-auto hidden lg:inline">Ctrl+S save · Ctrl+Z/Y undo/redo · Ctrl+K palette · Ctrl+B sidebar</span>
         <button onClick={() => setAutoSave(!autoSave)} className="px-2 py-0.5 border rounded text-[10px]">{autoSave ? 'Auto' : 'Manual'}</button>
       </footer>
 

@@ -1,7 +1,7 @@
 {
   "name": "drogo-flow",
   "version": "1.0.0",
-  "description": "Drogo Flow – Flow Chart Diagram Maker with Mermaid JS, cheaper than mermaidonline.live, with drag-drop, text, 3D, graph, flow views, exports MD/PNG/JPEG/SVG/PDF/Git, sharable, Next.js Vercel hostable",
+  "description": "Drogo Flow – Visual diagram builder with drag-and-drop, code editing, 3D visualization, and full export support. Built with Mermaid JS, Next.js, and Three.js.",
   "private": true,
   "scripts": {
     "dev": "next dev",
