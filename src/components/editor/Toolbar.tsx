@@ -163,7 +163,7 @@ export function Toolbar({ title, mermaidCode, svgElement, onTitleChange, onSave,
             </p>
             <div className="mt-5 flex gap-2">
               {!isLoggedIn ? (
-                <Link href="/login" className="flex-1">
+                <Link href={`/login?callbackUrl=${encodeURIComponent(typeof window !== 'undefined' ? window.location.pathname : '/editor/new')}`} className="flex-1">
                   <Button className="w-full rounded-lg">Sign In</Button>
                 </Link>
               ) : (

@@ -3,7 +3,6 @@
 import { Diagram } from '@/types/diagram';
 
 const DIAGRAMS_KEY = 'drogo_diagrams';
-const CURRENT_USER_KEY = 'drogo_user';
 
 export const storage = {
   getDiagrams(): Diagram[] {
@@ -41,25 +40,4 @@ export const storage = {
     const diagrams = this.getDiagrams().filter(d => d.id !== id);
     this.saveDiagrams(diagrams);
   },
-
-  // User mock
-  getCurrentUser() {
-    if (typeof window === 'undefined') return null;
-    try {
-      const data = localStorage.getItem(CURRENT_USER_KEY);
-      return data ? JSON.parse(data) : null;
-    } catch {
-      return null;
-    }
-  },
-
-  saveUser(user: any) {
-    if (typeof window === 'undefined') return;
-    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
-  },
-
-  logout() {
-    if (typeof window === 'undefined') return;
-    localStorage.removeItem(CURRENT_USER_KEY);
-  }
 };
