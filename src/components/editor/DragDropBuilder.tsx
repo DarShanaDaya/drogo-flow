@@ -103,6 +103,19 @@ export function DragDropBuilder({ nodes: initialNodes, edges: initialEdges, onNo
     onNodeSelect?.(flowNode);
   }, [onNodeSelect]);
 
+  const onEdgeClick = useCallback((_: any, edge: any) => {
+    const flowEdge = {
+      id: edge.id,
+      source: edge.source,
+      target: edge.target,
+      label: edge.label,
+    } as FlowEdge;
+    onEdgeSelect?.(flowEdge);
+    // @ts-ignore
+    setSelectedNode(null);
+    onNodeSelect?.(null);
+  }, [onEdgeSelect, onNodeSelect]);
+
   const onPaneClick = useCallback(() => {
     setSelectedNode(null);
     onNodeSelect?.(null);
@@ -152,6 +165,7 @@ export function DragDropBuilder({ nodes: initialNodes, edges: initialEdges, onNo
           onEdgesChange={handleEdgesChange as any}
           onConnect={onConnect}
           onNodeClick={onNodeClick}
+          onEdgeClick={onEdgeClick}
           onPaneClick={onPaneClick}
           nodeTypes={nodeTypes}
           fitView

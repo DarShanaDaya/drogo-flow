@@ -41,11 +41,13 @@ function Node3D({ node, position }: { node: FlowNode, position: [number, number,
         </mesh>
         <Text
           position={[0, 1, 0]}
-          fontSize={0.25}
-          color="#111"
+          fontSize={0.22}
+          color="white"
           anchorX="center"
           anchorY="middle"
           maxWidth={2}
+          outlineWidth={0.02}
+          outlineColor="black"
         >
           {node.data.label}
         </Text>
@@ -56,7 +58,6 @@ function Node3D({ node, position }: { node: FlowNode, position: [number, number,
 
 function Edge3D({ start, end }: { start: [number, number, number], end: [number, number, number] }) {
   const points = useMemo(() => [new THREE.Vector3(...start), new THREE.Vector3(...end)], [start, end]);
-  
   return (
     <Line
       points={points}
@@ -67,26 +68,47 @@ function Edge3D({ start, end }: { start: [number, number, number], end: [number,
   );
 }
 
-function Scene({ nodes, edges }: { nodes: FlowNode[], edges: FlowEdge[] }) {
+function Scene({ nodes, edges, layout }: { nodes: FlowNode[], edges: FlowEdge[], layout: string }) {
   const positions = useMemo(() => {
     const posMap = new Map<string, [number, number, number]>();
     nodes.forEach((node, idx) => {
-      // spiral / grid in 3D
-      const angle = (idx / nodes.length) * Math.PI * 2;
-      const radius = 3 + idx * 0.3;
-      const x = Math.cos(angle) * radius;
-      const z = Math.sin(angle) * radius;
-      const y = (Math.random() - 0.5) * 2 + idx * 0.2;
+      let x = 0, y = 0, z = 0;
+      if (layout === 'spiral') {
+        const angle = (idx / nodes.length) * Math.PI * 6;
+        const radius = 2 + idx * 0.5;
+        x = Math.cos(angle) * radius;
+        z = Math.sin(angle) * radius;
+        y = (Math.random() - 0.5) * 2 + idx * 0.15;
+      } else if (layout === 'grid') {
+        const col = idx % 4;
+        const row = Math.floor(idx / 4);
+        x = (col - 1.5) * 2.5;
+        z = (row - 1) * 2.5;
+        y = Math.sin(idx) * 0.5;
+      } else if (layout === 'sphere') {
+        const phi = Math.acos(-1 + (2 * idx) / nodes.length);
+        const theta = Math.sqrt(nodes.length * Math.PI) * phi;
+        const r = 4;
+        x = r * Math.cos(theta) * Math.sin(phi);
+        y = r * Math.sin(theta) * Math.sin(phi);
+        z = r * Math.cos(phi);
+      } else {
+        // force-like
+        x = (Math.random() - 0.5) * 8;
+        y = (Math.random() - 0.5) * 4;
+        z = (Math.random() - 0.5) * 8;
+      }
       posMap.set(node.id, [x, y, z]);
     });
     return posMap;
-  }, [nodes]);
+  }, [nodes, layout]);
 
   return (
     <>
-      <ambientLight intensity={0.6} />
-      <directionalLight position={[5, 5, 5]} intensity={0.8} />
-      <pointLight position={[-5, -5, -5]} intensity={0.5} color="#8b5cf6" />
+      <ambientLight intensity={0.7} />
+      <directionalLight position={[5, 8, 5]} intensity={1.2} />
+      <pointLight position={[-5, -5, -5]} intensity={0.8} color="#8b5cf6" />
+      <pointLight position={[5, -5, 5]} intensity={0.5} color="#06b6d4" />
       
       {nodes.map(node => {
         const pos = positions.get(node.id) || [0, 0, 0];
@@ -100,7 +122,7 @@ function Scene({ nodes, edges }: { nodes: FlowNode[], edges: FlowEdge[] }) {
         return <Edge3D key={edge.id} start={start} end={end} />;
       })}
 
-      <gridHelper args={[20, 20, '#e2e8f0', '#f1f5f9']} position={[0, -2, 0]} />
+      <gridHelper args={[20, 20, '#334155', '#1e293b']} position={[0, -2.5, 0]} />
     </>
   );
 }
@@ -112,6 +134,7 @@ interface Props {
 
 export function ThreeDView({ nodes, edges }: Props) {
   const [autoRotate, setAutoRotate] = useState(true);
+  const [layout, setLayout] = useState<'spiral' | 'grid' | 'sphere' | 'force'>('spiral');
 
   if (nodes.length === 0) {
     return (
@@ -126,33 +149,47 @@ export function ThreeDView({ nodes, edges }: Props) {
   }
 
   return (
-    <div className="w-full h-full relative bg-gradient-to-br from-zinc-950 to-zinc-900">
+    <div className="w-full h-full relative bg-gradient-to-br from-zinc-950 via-slate-950 to-zinc-900">
       <Canvas className="w-full h-full" camera={{ position: [0, 5, 8], fov: 60 }}>
-        <PerspectiveCamera makeDefault position={[6, 4, 6]} />
-        <Scene nodes={nodes} edges={edges} />
-        <OrbitControls autoRotate={autoRotate} autoRotateSpeed={0.5} enableDamping />
+        <PerspectiveCamera makeDefault position={[7, 5, 7]} />
+        <Scene nodes={nodes} edges={edges} layout={layout} />
+        <OrbitControls autoRotate={autoRotate} autoRotateSpeed={0.6} enableDamping dampingFactor={0.05} />
       </Canvas>
 
-      <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-md text-white p-3 rounded-lg text-xs border border-white/10">
-        <p className="font-semibold mb-1">3D View Controls</p>
-        <p>🖱️ Drag to orbit</p>
-        <p>🔍 Scroll to zoom</p>
-        <p>⌨️ Shift+drag to pan</p>
-        <div className="mt-2 flex items-center gap-2">
+      <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md text-white p-3 rounded-xl text-xs border border-white/10 shadow-xl max-w-[240px]">
+        <p className="font-semibold mb-2 flex items-center gap-2"><span>🧊</span> 3D View Controls</p>
+        <div className="space-y-1 text-[11px] opacity-80">
+          <p>🖱️ Drag to orbit • 🔍 Scroll zoom • Shift+drag pan</p>
+        </div>
+        <div className="mt-3 space-y-2">
+          <div>
+            <p className="text-[11px] font-medium mb-1">Layout</p>
+            <div className="grid grid-cols-2 gap-1">
+              {(['spiral','grid','sphere','force'] as const).map(l => (
+                <button key={l} onClick={() => setLayout(l)} className={`px-2 py-1 rounded text-[10px] capitalize ${layout===l ? 'bg-white text-black' : 'bg-white/10 hover:bg-white/20'}`}>{l}</button>
+              ))}
+            </div>
+          </div>
           <label className="flex items-center gap-1.5 cursor-pointer">
             <input type="checkbox" checked={autoRotate} onChange={(e) => setAutoRotate(e.target.checked)} className="rounded" />
             Auto-rotate
           </label>
         </div>
+        <p className="mt-3 text-[10px] opacity-60">Powered by Three.js • @react-three/fiber • Cheaper than mermaidonline.live</p>
       </div>
 
-      <div className="absolute bottom-4 left-4 right-4 flex gap-2 overflow-x-auto">
+      <div className="absolute bottom-4 left-4 right-4 flex gap-2 overflow-x-auto scrollbar-hide">
         {nodes.map(n => (
-          <div key={n.id} className="px-2.5 py-1.5 bg-white/10 backdrop-blur border border-white/20 rounded-full text-xs text-white whitespace-nowrap">
-            <span className="w-2 h-2 rounded-full inline-block mr-1.5" style={{ backgroundColor: n.data.color }} />
+          <div key={n.id} className="px-3 py-1.5 bg-white/10 backdrop-blur border border-white/20 rounded-full text-xs text-white whitespace-nowrap flex items-center gap-1.5 shadow-sm">
+            <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: n.data.color }} />
             {n.data.label}
+            <span className="opacity-50 text-[10px]">{n.data.type}</span>
           </div>
         ))}
+      </div>
+
+      <div className="absolute top-4 right-4 bg-black/60 backdrop-blur text-white px-3 py-2 rounded-full text-xs border border-white/10">
+        {nodes.length} nodes • {edges.length} edges • {layout} layout
       </div>
     </div>
   );
