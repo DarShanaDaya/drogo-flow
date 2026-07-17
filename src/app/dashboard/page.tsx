@@ -50,134 +50,115 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-      <header className="h-14 border-b bg-white dark:bg-zinc-900 flex items-center px-6 justify-between sticky top-0 z-10">
-        <Link href="/" className="font-bold flex items-center gap-2">
-          <span className="w-7 h-7 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded flex items-center justify-center">D</span>
+      <header className="h-14 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center px-6 justify-between sticky top-0 z-10">
+        <Link href="/" className="font-semibold flex items-center gap-2.5 text-zinc-900 dark:text-zinc-50">
+          <span className="w-7 h-7 bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 rounded-lg flex items-center justify-center text-sm font-bold">D</span>
           Drogo Flow
-          <span className="ml-2 px-2 py-0.5 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-full text-xs">60% cheaper</span>
         </Link>
-        <div className="flex gap-2">
-          <Link href="/docs"><Button variant="ghost" size="sm">Docs</Button></Link>
-          <Link href="/examples"><Button variant="ghost" size="sm">Examples</Button></Link>
-          <Link href="/pricing"><Button variant="outline" size="sm">Pricing</Button></Link>
-          <Link href="/editor/new"><Button size="sm">+ New</Button></Link>
+        <div className="flex items-center gap-2">
+          <Link href="/docs"><Button variant="ghost" size="sm" className="text-xs">Docs</Button></Link>
+          <Link href="/examples"><Button variant="ghost" size="sm" className="text-xs">Examples</Button></Link>
+          <Link href="/pricing"><Button variant="outline" size="sm" className="text-xs rounded-full">Pricing</Button></Link>
+          <Link href="/editor/new"><Button size="sm" className="rounded-full text-xs">New Diagram</Button></Link>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto p-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <main className="max-w-6xl mx-auto p-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">Your Diagrams <span className="px-2 py-0.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-full text-xs">{diagrams.length}</span></h1>
+            <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 flex items-center gap-3">
+              Your Diagrams
+              <span className="px-2.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded-full text-xs font-medium text-zinc-600 dark:text-zinc-400">{diagrams.length}</span>
+            </h1>
             <p className="text-sm text-zinc-500 mt-1">
-              {user ? `${user.name} • ${user.plan} • ${user.credits} credits • ${user.diagramsLimit} limit` : 'Local storage • Vercel hostable • No DB needed'}
-              {' • '}Animation Maker 🎬 + Presentation 🎥 + AI ✨ + 3D 🧊
+              {user ? `${user.name} · ${user.plan} plan · ${user.credits} credits` : 'Local storage · Sign in to save to the cloud'}
             </p>
           </div>
           <div className="flex gap-2">
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search diagrams..." className="h-9 px-3 rounded-lg border bg-white dark:bg-zinc-900 text-sm w-[200px]" />
-            <select value={sortBy} onChange={e => setSortBy(e.target.value as any)} className="h-9 px-2 rounded-lg border bg-white dark:bg-zinc-900 text-sm">
+            <input 
+              value={search} 
+              onChange={e => setSearch(e.target.value)} 
+              placeholder="Search diagrams..." 
+              className="h-9 px-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm w-[200px] focus:outline-none focus:ring-2 focus:ring-zinc-900/10" 
+            />
+            <select 
+              value={sortBy} 
+              onChange={e => setSortBy(e.target.value as any)} 
+              className="h-9 px-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm focus:outline-none"
+            >
               <option value="updated">Last Updated</option>
               <option value="created">Created</option>
               <option value="title">Title A-Z</option>
             </select>
-            <Button variant="outline" size="sm" className="h-9" onClick={handleExportAll}>Export All JSON</Button>
+            <Button variant="outline" size="sm" className="h-9 rounded-lg" onClick={handleExportAll}>Export All</Button>
           </div>
         </div>
 
         {/* Quick Actions */}
         <div className="grid md:grid-cols-4 gap-3 mb-8">
-          <Link href="/editor/new" className="p-4 border rounded-xl bg-white dark:bg-zinc-900 hover:shadow-md transition-shadow flex items-center gap-3">
-            <span className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900 flex items-center justify-center">🌊</span>
-            <div><p className="font-medium text-sm">New Flow</p><p className="text-xs text-zinc-500">Drag & Drop builder</p></div>
+          <Link href="/editor/new" className="p-4 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 hover:shadow-md transition-all flex items-center gap-3 group">
+            <span className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6z" /></svg>
+            </span>
+            <div><p className="font-medium text-sm text-zinc-900 dark:text-zinc-50">New Flow</p><p className="text-xs text-zinc-500">Drag & drop builder</p></div>
           </Link>
-          <div className="p-4 border rounded-xl bg-gradient-to-br from-violet-50 to-blue-50 dark:from-violet-950/30 dark:to-blue-950/30 flex items-center gap-3 cursor-pointer" onClick={() => window.location.href='/editor/new'}>
-            <span className="w-10 h-10 rounded-lg bg-violet-600 text-white flex items-center justify-center">🎬</span>
-            <div><p className="font-medium text-sm">Animation Maker</p><p className="text-xs text-zinc-500">Timeline + autoplay</p></div>
-          </div>
-          <Link href="/examples" className="p-4 border rounded-xl bg-white dark:bg-zinc-900 hover:shadow-md transition-shadow flex items-center gap-3">
-            <span className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900 flex items-center justify-center">📚</span>
-            <div><p className="font-medium text-sm">Templates</p><p className="text-xs text-zinc-500">6 ready flows</p></div>
+          <Link href="/editor/new" className="p-4 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-gradient-to-br from-violet-50 to-blue-50 dark:from-violet-950/20 dark:to-blue-950/20 hover:shadow-md transition-all flex items-center gap-3 group">
+            <span className="w-10 h-10 rounded-xl bg-violet-600 text-white flex items-center justify-center group-hover:scale-105 transition-transform">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" /></svg>
+            </span>
+            <div><p className="font-medium text-sm text-zinc-900 dark:text-zinc-50">Animation</p><p className="text-xs text-zinc-500">Timeline & autoplay</p></div>
           </Link>
-          <Link href="/pricing" className="p-4 border rounded-xl bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 flex items-center gap-3 border-green-200 dark:border-green-800">
-            <span className="w-10 h-10 rounded-lg bg-green-600 text-white flex items-center justify-center">💸</span>
-            <div><p className="font-medium text-sm text-green-800 dark:text-green-200">Save 60%</p><p className="text-xs text-green-600 dark:text-green-400">$4.9 vs $8.9</p></div>
+          <Link href="/examples" className="p-4 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 hover:shadow-md transition-all flex items-center gap-3 group">
+            <span className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>
+            </span>
+            <div><p className="font-medium text-sm text-zinc-900 dark:text-zinc-50">Templates</p><p className="text-xs text-zinc-500">Start from examples</p></div>
+          </Link>
+          <Link href="/pricing" className="p-4 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20 hover:shadow-md transition-all flex items-center gap-3 group">
+            <span className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center group-hover:scale-105 transition-transform">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" /></svg>
+            </span>
+            <div><p className="font-medium text-sm text-zinc-900 dark:text-zinc-50">Upgrade</p><p className="text-xs text-zinc-500">Unlock cloud save</p></div>
           </Link>
         </div>
 
         {filtered.length === 0 ? (
-          <Card className="p-12 text-center">
-            <p className="text-lg font-medium">{diagrams.length === 0 ? 'No diagrams yet' : `No results for "${search}"`}</p>
-            <p className="text-sm text-zinc-500 mt-2">Create your first flow chart – drag-drop, text, 3D, graph, flow, animate, presentation, AI, exports MD/PNG/JPEG/SVG/PDF/Git</p>
+          <Card className="p-12 text-center border-zinc-200 dark:border-zinc-800">
+            <p className="text-lg font-medium text-zinc-900 dark:text-zinc-50">{diagrams.length === 0 ? 'No diagrams yet' : `No results for "${search}"`}</p>
+            <p className="text-sm text-zinc-500 mt-2">Create your first flowchart — drag-and-drop, code, 3D, or animation.</p>
             <div className="mt-6 flex justify-center gap-2">
-              <Link href="/editor/new"><Button>Create First Diagram →</Button></Link>
-              <Link href="/examples"><Button variant="outline">Browse Templates</Button></Link>
+              <Link href="/editor/new"><Button className="rounded-full">Create Diagram</Button></Link>
+              <Link href="/examples"><Button variant="outline" className="rounded-full">Browse Templates</Button></Link>
             </div>
           </Card>
         ) : (
           <div className="grid md:grid-cols-3 gap-4">
             {filtered.map(d => (
-              <Card key={d.id} className="hover:shadow-md transition-shadow group">
+              <Card key={d.id} className="hover:shadow-md transition-all group border-zinc-200 dark:border-zinc-800">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base flex items-center justify-between">
+                  <CardTitle className="text-base flex items-center justify-between text-zinc-900 dark:text-zinc-50">
                     <span className="truncate">{d.title}</span>
                     <span className="text-xs font-normal text-zinc-500">{new Date(d.updatedAt).toLocaleDateString()}</span>
                   </CardTitle>
-                  <div className="flex gap-1 mt-2">
-                    <span className="text-[10px] px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded-full">{d.nodes.length} nodes</span>
-                    <span className="text-[10px] px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded-full">{d.viewMode}</span>
-                    {d.animation && <span className="text-[10px] px-1.5 py-0.5 bg-violet-100 dark:bg-violet-900 text-violet-700 dark:text-violet-300 rounded-full">animated</span>}
+                  <div className="flex gap-1.5 mt-2">
+                    <span className="text-[10px] px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded-full font-medium text-zinc-600 dark:text-zinc-400">{d.nodes.length} nodes</span>
+                    <span className="text-[10px] px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded-full font-medium text-zinc-600 dark:text-zinc-400">{d.viewMode}</span>
+                    {d.animation && <span className="text-[10px] px-1.5 py-0.5 bg-violet-100 dark:bg-violet-900/50 text-violet-700 dark:text-violet-300 rounded-full font-medium">animated</span>}
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <pre className="text-xs bg-zinc-950 text-zinc-100 p-3 rounded-lg overflow-hidden h-24 group-hover:h-28 transition-all">{d.mermaidCode.substring(0, 200)}...</pre>
+                  <pre className="text-xs bg-zinc-950 text-zinc-300 p-3 rounded-lg overflow-hidden h-24 group-hover:h-28 transition-all leading-5 font-mono">{d.mermaidCode.substring(0, 200)}...</pre>
                   <div className="mt-4 flex gap-2">
-                    <Link href={`/editor/${d.id}`} className="flex-1"><Button size="sm" className="w-full">Edit</Button></Link>
-                    <Link href={`/editor/${d.id}`}><Button size="sm" variant="outline" className="h-8 text-xs">🎬 Animate</Button></Link>
-                    <Button size="sm" variant="outline" onClick={() => handleDelete(d.id)}>🗑️</Button>
+                    <Link href={`/editor/${d.id}`} className="flex-1"><Button size="sm" className="w-full rounded-lg">Edit</Button></Link>
+                    <Button size="sm" variant="outline" className="rounded-lg h-8 px-2" onClick={() => handleDelete(d.id)}>
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
         )}
-
-        <div className="mt-12 grid md:grid-cols-2 gap-6">
-          <div className="p-6 border rounded-xl bg-white dark:bg-zinc-900">
-            <h3 className="font-semibold flex items-center gap-2">🧪 Unit Tests – 53 passing</h3>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-2">Vitest + Testing Library + jsdom. Tests for parser, generator, share, utils, auth, storage, animation, diagram types, MermaidRenderer.</p>
-            <div className="mt-3 p-3 bg-zinc-950 text-zinc-100 rounded-lg text-xs font-mono">
-              <div>✓ src/lib/mermaid/parser.test.ts (6)</div>
-              <div>✓ src/lib/mermaid/generator.test.ts (9)</div>
-              <div>✓ src/lib/animation.test.ts (8)</div>
-              <div>✓ src/lib/share.test.ts (6)</div>
-              <div>✓ src/lib/storage.test.ts (5)</div>
-              <div>✓ src/lib/utils.test.ts (7)</div>
-              <div>✓ 45 → 53 tests passing</div>
-            </div>
-            <p className="text-xs text-zinc-500 mt-2">Run: npm test</p>
-          </div>
-
-          <div className="p-6 border rounded-xl bg-white dark:bg-zinc-900">
-            <h3 className="font-semibold">Why Drogo Flow is cheaper?</h3>
-            <div className="mt-3 grid grid-cols-3 gap-3 text-sm">
-              <div className="p-3 bg-green-50 dark:bg-green-950/30 rounded-lg">
-                <p className="font-semibold text-green-800 dark:text-green-200">$4.9 vs $8.9</p>
-                <p className="text-green-700 dark:text-green-300 text-xs mt-1">44% cheaper</p>
-              </div>
-              <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
-                <p className="font-semibold text-blue-800 dark:text-blue-200">$39.9 vs $99.9</p>
-                <p className="text-blue-700 dark:text-blue-300 text-xs mt-1">60% cheaper</p>
-              </div>
-              <div className="p-3 bg-violet-50 dark:bg-violet-950/30 rounded-lg">
-                <p className="font-semibold text-violet-800 dark:text-violet-200">$2.9 vs $4.9</p>
-                <p className="text-violet-700 dark:text-violet-300 text-xs mt-1">41% +50% credits</p>
-              </div>
-            </div>
-            <div className="mt-3 text-xs text-zinc-500">
-              Features: Drag-drop, Text, 3D, Graph, Flow, Properties, Animate, Presentation, AI mock, Templates, History, Undo/Redo, Cmd+K palette, Dark mode, Exports MD/PNG/JPEG/SVG/PDF/Git, Sharable
-            </div>
-          </div>
-        </div>
       </main>
     </div>
   );

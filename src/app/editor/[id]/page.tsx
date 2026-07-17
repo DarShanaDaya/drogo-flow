@@ -281,14 +281,14 @@ export default function EditorPage() {
     }
   };
 
-  // Auto-save
+  // Auto-save (only for logged-in paid users)
   useEffect(() => {
-    if (!autoSave) return;
+    if (!autoSave || !user || user.plan === 'free') return;
     const interval = setInterval(() => {
       if (diagram && (nodes.length > 0 || mermaidCode !== DEFAULT_MERMAID)) handleSave();
     }, 3000);
     return () => clearInterval(interval);
-  }, [autoSave, diagram, nodes, mermaidCode, handleSave]);
+  }, [autoSave, diagram, nodes, mermaidCode, handleSave, user]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -392,12 +392,12 @@ export default function EditorPage() {
           <Button variant="ghost" size="sm" className="h-7 text-xs hidden md:flex" onClick={() => setIsPresentation(true)}>🎥 Present</Button>
           <Button variant="ghost" size="sm" className="h-7 text-xs hidden md:flex" onClick={() => setIsCommandPaletteOpen(true)}>⌘K</Button>
           <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={handleDuplicate}>Dup</Button>
-          <Link href="/pricing" className="hidden sm:inline text-xs px-2.5 py-1 bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300 rounded-full border border-green-200 dark:border-green-800">Save 60%</Link>
-          <Link href="/dashboard" className="text-xs px-2 hidden sm:inline">Dash</Link>
+          <Link href="/pricing" className="hidden sm:inline text-xs px-2.5 py-1 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-300 rounded-full border border-indigo-200 dark:border-indigo-800 font-medium">Upgrade</Link>
+          <Link href="/dashboard" className="text-xs px-2 hidden sm:inline text-zinc-600 dark:text-zinc-400">Dashboard</Link>
         </div>
       </header>
 
-      <Toolbar title={diagram.title} mermaidCode={mermaidCode} svgElement={svgElement} onTitleChange={handleTitleChange} onSave={handleSave} />
+      <Toolbar title={diagram.title} mermaidCode={mermaidCode} svgElement={svgElement} onTitleChange={handleTitleChange} onSave={handleSave} isLoggedIn={!!user} isPaid={!!user && user.plan !== 'free'} />
 
       <div className="flex-1 flex min-h-0 overflow-hidden">
         {showSidebar && <DiagramSidebar currentId={diagram.id} />}
@@ -432,7 +432,7 @@ export default function EditorPage() {
       <footer className="h-8 border-t border-zinc-200 dark:border-zinc-800 flex items-center px-3 text-[11px] text-zinc-500 bg-zinc-50 dark:bg-zinc-900 gap-3">
         <span className="hidden sm:inline">{nodes.length}N • {edges.length}E • {mermaidCode.length} chars • {autoSave ? `Auto ${lastSaved ? `• ${lastSaved}` : ''}` : 'Manual'} • {history.canUndo ? 'Undo✓' : ''} {history.canRedo ? 'Redo✓' : ''} • {isSyncing ? 'Syncing' : 'Synced'}</span>
         <span className="sm:hidden">{nodes.length}N {edges.length}E</span>
-        <span className="ml-auto hidden lg:inline">Shortcuts: Ctrl+S save, Ctrl+Z/Y undo/redo, Ctrl+K palette, Ctrl+B sidebar • Exports: .md .png .jpeg .svg .pdf .git • Animate 🎬 Cast 🎥</span>
+        <span className="ml-auto hidden lg:inline">Ctrl+S save · Ctrl+Z/Y undo/redo · Ctrl+K palette · Ctrl+B sidebar</span>
         <button onClick={() => setAutoSave(!autoSave)} className="px-2 py-0.5 border rounded text-[10px]">{autoSave ? 'Auto' : 'Manual'}</button>
       </footer>
 

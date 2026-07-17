@@ -20,37 +20,37 @@ export default function SignupPage() {
     setLoading(true);
     await signup(email, name, password);
     setLoading(false);
-    router.push('/editor/new');
+    router.push('/dashboard');
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950 p-6">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center">
-          <Link href="/" className="mx-auto w-10 h-10 rounded-lg bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center font-bold mb-4">D</Link>
-          <CardTitle>Create account – free forever</CardTitle>
-          <CardDescription>Start building flow charts. $4.9 vs $8.9 cheaper.</CardDescription>
+          <Link href="/" className="mx-auto w-10 h-10 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center font-bold mb-4">D</Link>
+          <CardTitle className="text-xl">Create your account</CardTitle>
+          <CardDescription>Start building diagrams — free forever plan available</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSignup} className="space-y-4">
             <div>
-              <label className="text-sm font-medium">Name</label>
-              <Input value={name} onChange={e => setName(e.target.value)} placeholder="Alex Builder" className="mt-1" required />
+              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Name</label>
+              <Input value={name} onChange={e => setName(e.target.value)} placeholder="Alex" className="mt-1.5" required />
             </div>
             <div>
-              <label className="text-sm font-medium">Email</label>
-              <Input value={email} onChange={e => setEmail(e.target.value)} type="email" placeholder="you@example.com" className="mt-1" required />
+              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Email</label>
+              <Input value={email} onChange={e => setEmail(e.target.value)} type="email" placeholder="you@example.com" className="mt-1.5" required />
             </div>
             <div>
-              <label className="text-sm font-medium">Password</label>
-              <Input value={password} onChange={e => setPassword(e.target.value)} type="password" placeholder="••••••••" className="mt-1" required />
+              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Password</label>
+              <Input value={password} onChange={e => setPassword(e.target.value)} type="password" placeholder="••••••••" className="mt-1.5" required />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Creating...' : 'Create account – Free →'}
+            <Button type="submit" className="w-full h-10 rounded-lg" disabled={loading}>
+              {loading ? 'Creating account...' : 'Create account'}
             </Button>
           </form>
           <div className="mt-6 text-center text-sm text-zinc-500">
-            Already have account? <Link href="/login" className="font-medium text-zinc-900 dark:text-zinc-50 underline">Login</Link>
+            Already have an account? <Link href="/login" className="font-medium text-zinc-900 dark:text-zinc-50 hover:underline">Sign in</Link>
           </div>
         </CardContent>
       </Card>

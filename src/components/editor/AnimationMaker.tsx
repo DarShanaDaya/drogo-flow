@@ -370,9 +370,9 @@ export function AnimationMaker({ nodes, edges, mermaidCode, onClose }: Props) {
               </ul>
             </div>
 
-            <div className="p-3 bg-green-50 dark:bg-green-950/20 rounded-xl border border-green-200 dark:border-green-800">
-              <p className="text-xs font-semibold text-green-800 dark:text-green-200">💸 Included in All Paid Plans</p>
-              <p className="text-[11px] text-green-700 dark:text-green-300 mt-1">Animation maker is premium feature – no watermark on $4.9/$39.9/$2.9/mo. Cheaper than mermaidonline.live.</p>
+            <div className="p-3 bg-indigo-50 dark:bg-indigo-950/20 rounded-xl border border-indigo-200 dark:border-indigo-800">
+              <p className="text-xs font-semibold text-indigo-800 dark:text-indigo-200">Animation Maker</p>
+              <p className="text-[11px] text-indigo-700 dark:text-indigo-300 mt-1">Create step-by-step animations of your diagrams. Available on all plans.</p>
             </div>
           </div>
         </div>
